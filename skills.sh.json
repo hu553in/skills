@@ -5,9 +5,12 @@
     {
       "title": "Code Quality",
       "description": "Skills for reviewing and improving code quality.",
-      "skills": [
-        "staged-code-review"
-      ]
+      "skills": ["staged-code-review"]
+    },
+    {
+      "title": "Repository Hygiene",
+      "description": "Skills for standardizing repository docs, tooling, and metadata.",
+      "skills": ["repo-fleet-standardization"]
     }
   ]
 }

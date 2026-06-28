@@ -15,15 +15,28 @@ Review staged changes as the primary scope, fix every actionable issue, and repe
 finds nothing else to improve. Preserve the user's staged index exactly: never stage, unstage,
 reset, or otherwise rewrite staged entries unless the user explicitly asks.
 
+## Request mode
+
+- Default to review-and-fix mode when the user asks for a full staged review, asks to fix findings,
+  or asks to keep going until no actionable issues remain.
+- If the user explicitly asks for read-only review, proposal-only output, or "do not change
+  anything", do not edit files. Report findings with concrete file and line references instead.
+- Do not treat approval from an earlier turn as permission to stage, unstage, commit, push, reset,
+  or perform any other index/history mutation in the current turn.
+
 ## Starting state
 
-1. Read applicable `AGENTS.md` and `CLAUDE.md` files for the repository being reviewed.
+1. Read applicable repository and agent instruction files for the repository being reviewed.
 2. Inspect repository state before analysis:
    - `git status -sb`
    - `git diff --cached --name-status`
    - `git diff --cached --stat`
    - `git diff --name-status`
-3. Treat `git diff --cached` as the authoritative staged review scope.
+   - `git diff --cached --check`
+3. Treat `git diff --cached` as the authoritative staged review scope. Keep the initial staged
+   name/status and stat in mind so the final pass can confirm the staged index stayed unchanged. If
+   `git diff --cached --check` reports whitespace or conflict-marker issues, keep the output as
+   review findings instead of abandoning the pass.
 4. Treat unstaged user changes as separate context. Do not overwrite them. If pre-existing unstaged
    changes overlap the staged files and make safe fixes ambiguous, ask before editing those files.
 5. Stop early only when there are no staged changes, and say that clearly.
@@ -34,14 +47,16 @@ Repeat this loop until a complete iteration finds no actionable issues:
 
 1. Read the full staged diff and the surrounding files, not only the changed hunks.
 2. Search for related call sites, tests, styles, migrations, schemas, routes, config, and generated
-   wiring with `rg` or repository-native tools.
+   wiring with repository-native code intelligence, code indexes, `rg`, or other local tools.
 3. Check cross-file consistency across every layer touched by the staged changes.
 4. Fix each issue with the smallest repo-native change that removes the root cause.
 5. Keep every fix unstaged. Use `git status -sb`, `git diff --cached`, and `git diff` after edits to
    confirm the index remained unchanged and to understand the combined end state.
-6. Run the repository's established validation commands. Prefer task runners, package scripts,
+6. If any command unexpectedly changes the staged diff, stop immediately and report the index
+   mutation instead of trying to repair it silently.
+7. Run the repository's established validation commands. Prefer task runners, package scripts,
    Makefiles, CI-equivalent checks, linters, formatters, and tests already present in the project.
-7. Re-read the staged diff plus the new unstaged fixes. Continue the loop until there are no bugs,
+8. Re-read the staged diff plus the new unstaged fixes. Continue the loop until there are no bugs,
    no missing hardening, no style mismatches, no weak tests, and no useful simplifications left.
 
 ## Review checklist
@@ -64,6 +79,8 @@ Look for all of the following, even when the staged diff looks locally correct:
   lightweight modern dependency would materially reduce complexity. Before adding a new dependency,
   verify the latest stable version and official documentation, then add it only when the gain is
   concrete and compatible with the project.
+- Deletion, rename, or move fallout: stale imports, routes, exports, registrations, docs, generated
+  wiring, permissions, fixtures, snapshots, and packaging references.
 - UI and design mismatches across the project, including spacing, typography, color, interaction
   states, loading and empty states, accessibility, desktop layouts, and responsive behavior down to
   mobile widths.
@@ -84,6 +101,8 @@ repeat the rendered check.
 - Do not "clean up" unrelated unstaged work.
 - If a formatter modifies files, leave those modifications unstaged and include them in the next
   review iteration.
+- If a validation or generation command writes expected files, treat those writes as unstaged fixes
+  and review them before finishing.
 - If a fix must touch a file that already has unrelated unstaged user edits, avoid clobbering those
   edits. Ask when the safe edit cannot be isolated.
 

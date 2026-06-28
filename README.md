@@ -9,22 +9,29 @@ Personal reusable agent skills.
 - [`staged-code-review`](staged-code-review/SKILL.md): exhaustive iterative review of staged Git
   changes that fixes actionable issues while preserving the staged index.
 
+## Repository hygiene
+
+- [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
+  docs, tooling config, shared sync templates, and GitHub metadata without touching application
+  code.
+
 ## Install
 
 ```sh
 bunx skills add hu553in/skills
 ```
 
-Then invoke the skill by name when the workflow applies:
+Then invoke a skill by name when the workflow applies:
 
 ```text
-Use $staged-code-review for an iterative staged-change review that leaves my index unchanged.
+Use $staged-code-review to iteratively review and fix my staged changes while preserving my staged index and leaving any new fixes unstaged.
+Use $repo-fleet-standardization to standardize docs, tooling configs, sync templates, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 ```
 
 ## Repository layout
 
-- `staged-code-review/SKILL.md` contains the reusable review workflow.
-- `staged-code-review/agents/openai.yaml` contains the OpenAI agent prompt metadata.
+- `<skill-name>/SKILL.md` contains the reusable workflow.
+- `<skill-name>/agents/openai.yaml` contains the OpenAI agent prompt metadata.
 - `skills.sh.json` groups skills on the skills.sh repository page. It does not change CLI
   installation or any `SKILL.md` content.
 
