@@ -1,0 +1,13 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Code Quality",
+      "description": "Skills for reviewing and improving code quality.",
+      "skills": [
+        "staged-code-review"
+      ]
+    }
+  ]
+}
