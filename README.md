@@ -24,7 +24,7 @@ bunx skills add hu553in/skills
 Then invoke a skill by name when the workflow applies:
 
 ```text
-Use $staged-code-review to iteratively review and fix my staged changes while preserving my staged index and leaving any new fixes unstaged.
+Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, sync templates, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 ```
 
