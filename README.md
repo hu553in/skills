@@ -1,5 +1,6 @@
 # Skills
 
+[![CI](https://github.com/hu553in/skills/actions/workflows/ci.yml/badge.svg)](https://github.com/hu553in/skills/actions/workflows/ci.yml)
 [![skills.sh](https://skills.sh/b/hu553in/skills)](https://skills.sh/hu553in/skills)
 
 Personal reusable agent skills.
@@ -20,6 +21,11 @@ Personal reusable agent skills.
 - [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
   docs, tooling config, shared sync templates, and GitHub metadata without touching application
   code.
+
+## Requirements
+
+- Bun for installation and repository checks
+- uv for repository maintenance
 
 ## Install
 
@@ -44,8 +50,16 @@ Use $anti-slop-design to design, build, refactor, or review this interface with 
 
 ## Maintenance
 
+Enable the tracked project-check and Commitlint hooks once per clone with Git 2.54 or newer:
+
+```sh
+git config --local include.path ../.gitconfig
+```
+
 When adding a skill:
 
 1. Place it under `<skill-name>/SKILL.md`.
 2. Add agent-specific metadata under `<skill-name>/agents/` when needed.
 3. Add the skill slug to `skills.sh.json` so the skills.sh page stays organized.
+4. Run `make check`. It validates formatting, workflows, `skills.sh.json` against the official
+   schema, skill structure, and the local skills.sh listing.

@@ -1,6 +1,6 @@
 interface:
-  display_name: "Staged code review"
-  short_description: "Iterative staged-change review"
+  display_name: 'Staged code review'
+  short_description: 'Iterative staged-change review'
   default_prompt:
-    "Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged
-    index exactly, and leave any new fixes unstaged."
+    'Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged
+    index exactly, and leave any new fixes unstaged.'
