@@ -4,6 +4,12 @@
 
 Personal reusable agent skills.
 
+## Design
+
+- [`anti-slop-design`](anti-slop-design/SKILL.md): distinctive, cohesive interface design,
+  implementation, refactoring, and review with a complete anti-pattern audit and rendered
+  verification.
+
 ## Code quality
 
 - [`staged-code-review`](staged-code-review/SKILL.md): exhaustive iterative review of staged Git
@@ -26,6 +32,7 @@ Then invoke a skill by name when the workflow applies:
 ```text
 Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, sync templates, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
+Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and a complete anti-slop verification pass.
 ```
 
 ## Repository layout

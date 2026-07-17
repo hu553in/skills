@@ -3,6 +3,11 @@
   "notGrouped": "bottom",
   "groupings": [
     {
+      "title": "Design",
+      "description": "Skills for distinctive interface design and frontend craft.",
+      "skills": ["anti-slop-design"]
+    },
+    {
       "title": "Code Quality",
       "description": "Skills for reviewing and improving code quality.",
       "skills": ["staged-code-review"]
