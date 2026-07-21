@@ -25,7 +25,9 @@ then do another pass for drift and small inconsistencies.
   editing. If a repo has active work in progress and must still be checked, use a separate worktree
   from the requested base branch.
 - Read applicable repository and agent instruction files before working in each repository.
-- Treat dependency version drift as out of scope when an automated dependency updater owns it.
+- Treat dependency version drift as out of scope when an automated dependency updater owns it. When
+  no updater owns a repo, compare pinned tool and action versions against current upstream releases
+  and propose adding automation.
 - Preserve badges and other user-owned README signals unless the user explicitly asks to change
   them.
 
@@ -53,12 +55,17 @@ then do another pass for drift and small inconsistencies.
 1. Discover the repository set and classify it by stack, toolchain, runtime, deployment role,
    shared-template role, metadata-only role, or unique one-off role.
 2. Capture state before edits: `git status -sb`, staged/unstaged names, remotes, and relevant GitHub
-   metadata. Preserve the staged index exactly unless the user asks otherwise.
+   metadata. Preserve the staged index exactly unless the user asks otherwise. The user may stage or
+   unstage changes while you work; index drift you did not cause is expected, not an incident.
+   Continue without stopping, investigating, or reverting, and mention the change in the final
+   report.
 3. Build a merged file-class checklist from the actual repos before judging completeness. Include
    docs, package metadata, linters, task runners, CI, container config, dependency automation,
    generated-file config, sync templates, and GitHub metadata.
 4. For each class, compare all applicable repos side by side. Separate justified repo-specific
-   differences from accidental drift.
+   differences from accidental drift. Check what should exist but does not: a surface missing from
+   one repo while siblings have it (license, ignore entries, dependency automation, docs for an
+   option) is drift too.
 5. If a file is sync-managed, edit the source template or sync config instead of the generated
    target. Do not patch downstream copies unless the user explicitly asks.
 6. Apply small, repo-native edits only when the current request authorizes writes. Prefer deleting
@@ -80,7 +87,10 @@ Collect these surfaces when they exist:
   config, linter config, test config, generated-code config, and language-specific project config.
 - Infra config around the project, not runtime services for their own sake: GitHub Actions,
   dependency automation, container build/runtime config, deployment scripts, sync config, repo
-  templates, and release/tag settings.
+  templates, and release/tag settings. In workflows, check concurrency guards, timeouts, and pinned
+  action versions.
+- Example configs and other files prone to leaked personal data: examples use neutral placeholder
+  values; hunt real names, tokens, and personal configs that leaked into reusable repos.
 - Repository metadata: GitHub description, topics, homepage, visibility, releases, tags, and
   skills.sh metadata when applicable.
 

@@ -141,7 +141,8 @@ glow, and hover or press state pops.
 
 Before delivery, run the actual interface. Cover every in-scope surface and representative affected
 uses of shared primitives with the applicable checks below; do not invent unsupported form factors,
-themes, or states.
+themes, or states. Verify against a fresh or cache-busted load; a cached page shows stale styling
+and falsifies the check in both directions.
 
 ### Viewports
 

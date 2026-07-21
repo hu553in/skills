@@ -37,11 +37,11 @@ otherwise rewrite staged entries unless the user explicitly asks.
    - `git diff --name-status`
    - `git diff --cached --check`
 3. Treat `git diff --cached` as the authoritative staged review scope. Keep the initial staged
-   name/status and stat in mind so the final pass can confirm the staged index stayed unchanged. If
-   `git diff --cached --check` reports whitespace or conflict-marker issues, keep the output as
-   review findings instead of abandoning the pass.
-4. Treat unstaged user changes as separate context. Do not overwrite them. If pre-existing unstaged
-   changes overlap the staged files and make safe fixes ambiguous, ask before editing those files.
+   name/status and stat in mind so the final report can say whether the staged scope changed during
+   the review. If `git diff --cached --check` reports whitespace or conflict-marker issues, keep the
+   output as review findings instead of abandoning the pass.
+4. Treat unstaged user changes as separate context. Do not overwrite them; the ask-before-clobbering
+   rule is in Index safety.
 5. Stop early only when there are no staged changes, and say that clearly.
 
 ## Review loop
@@ -58,9 +58,11 @@ Repeat this loop until a complete iteration finds no actionable issues:
 4. Fix each issue with the smallest change that follows the workspace's existing conventions and
    removes the root cause.
 5. Keep every fix unstaged. Use `git status -sb`, `git diff --cached`, and `git diff` after edits to
-   confirm the index remained unchanged and to understand the combined end state.
-6. If any command unexpectedly changes the staged diff, stop immediately and report the index
-   mutation instead of trying to repair it silently.
+   track the current staged scope and understand the combined end state.
+6. If the staged diff changes mid-review, that is usually the user staging or unstaging while you
+   work, including fixes you just made; it is expected, not corruption. Do not stop, investigate,
+   revert, or otherwise touch the index in response. Refresh the review scope, continue, and mention
+   the change in the final report.
 7. Run the workspace's established validation commands. Prefer existing task runners, CI-equivalent
    checks, linters, formatters, and tests over ad hoc commands.
 8. Re-read the staged diff plus the new unstaged fixes. Continue the loop until there are no bugs,
@@ -72,9 +74,16 @@ Look for all relevant classes of issues, even when the staged diff looks locally
 checklist to the workspace in front of you; do not force irrelevant stack-specific checks.
 
 - Correctness bugs, behavioral regressions, race conditions, broken error paths, and edge cases.
+- Changed algorithmic code (hashing, randomness, arithmetic) not verified against a reference
+  implementation; eyeballed output is not equivalence.
 - Missing or weak tests for the changed behavior, including negative paths and boundary cases. Avoid
   brittle tests that only assert incidental implementation details unless those details are the
-  contract.
+  contract. Flag tests whose only assertion is that a deleted thing stays absent, and tests that
+  exist only to move a coverage number.
+- Tests that pass for the wrong reason: negative tests where the environment auto-injects config
+  (env files, defaults) and turns "without X" falsely green, boundary tests placed on empty cases
+  where no signal exists, and smoke tests that only check artifacts parse instead of asserting
+  expected content.
 - Inconsistent style, naming, terminology, localization, layering, ownership, public interfaces, or
   error handling.
 - Overcomplicated code, duplicated logic, unnecessary abstractions, dead paths introduced by the
@@ -89,6 +98,8 @@ checklist to the workspace in front of you; do not force irrelevant stack-specif
   rendering, cache invalidation mistakes, repeated computation, or missing resource bounds.
 - Security and data-integrity issues, especially authorization, secrets, injection surfaces, unsafe
   deserialization, path handling, migration compatibility, and sensitive logging.
+- Stale pinned versions in files the staged changes touch: compare pinned dependencies, actions, and
+  tools against current upstream releases; internal consistency review cannot catch staleness.
 - Dependency mistakes: custom code where an existing dependency should be reused, or a lightweight
   well-maintained dependency would materially reduce complexity. Before adding a new dependency,
   verify current docs, compatibility, license fit, and security impact, then add it only when the
@@ -98,20 +109,30 @@ checklist to the workspace in front of you; do not force irrelevant stack-specif
 - UI and design mismatches where UI exists: spacing, typography, color, interaction states, loading
   and empty states, accessibility, desktop layouts, and responsive behavior down to the smallest
   supported width.
+- Comment problems: narration of what the code does, notes addressed to the reviewer, comments the
+  change left stale, group comments orphaned by reordering, and magic values without a comment
+  naming the constraint that produced them.
 - Documentation, config, deploy, migration, and generated-code drift caused by the staged changes.
+  Treat doc examples and example configs as code: they must parse and run against the changed
+  implementation, with shown defaults identical to it.
 
 ## UI verification
 
 When staged changes affect UI and the workspace can be run locally, inspect the real rendered
 result. Use the existing dev command or preview workflow, then verify representative desktop and
-mobile widths with available browser or screenshot tools. Check for overlap, clipped text, layout
-jumps, inconsistent tokens, broken hover/focus/disabled states, and responsive regressions. Fix
-visual problems and repeat the rendered check. When available, inspect runtime logs or browser
-console output before claiming the UI is clean.
+mobile widths with available browser or screenshot tools. Verify against a fresh or cache-busted
+load; a cached page shows stale output and falsifies the check in both directions. Check for
+overlap, clipped text, layout jumps, inconsistent tokens, broken hover/focus/disabled states, and
+responsive regressions. Fix visual problems and repeat the rendered check. When available, inspect
+runtime logs or browser console output before claiming the UI is clean.
 
 ## Validation
 
 - Use the strongest existing validation path that is practical for the changed scope.
+- When the workspace defines one command that runs all its checks with autofixes, prefer it over
+  running individual tools and fixing their output by hand.
+- Treat tool output defensively: validate content, not only exit codes; some tools print errors to
+  stdout and exit zero.
 - Prefer targeted checks during iteration and a broader check before finishing when feasible.
 - Do not claim a check passed unless it actually ran.
 - If a check cannot run, report why and keep reviewing what can still be verified locally.
@@ -128,7 +149,8 @@ external system that cannot be verified locally, report it explicitly instead of
   mutations unless the user explicitly asks.
 - Do not "clean up" unrelated unstaged work.
 - If a formatter modifies files, leave those modifications unstaged and include them in the next
-  review iteration.
+  review iteration. After any automated unsafe fix, treat touched bit-twiddling, hashing, and
+  randomness code as broken until verified against a reference implementation.
 - If a validation or generation command writes expected files, treat those writes as unstaged fixes
   and review them before finishing.
 - If a fix must touch a file that already has unrelated unstaged user edits, avoid clobbering those
@@ -141,5 +163,6 @@ Report:
 - what was fixed, grouped by file or concern;
 - which validation commands ran and whether they passed;
 - whether any checks could not be run;
-- that new fixes were left unstaged and the original staged index was not modified;
+- that new fixes were left unstaged, and whether the staged scope changed during the review (the
+  user staging or unstaging mid-review is normal and only needs a mention);
 - any remaining risks only when they are real and actionable.
