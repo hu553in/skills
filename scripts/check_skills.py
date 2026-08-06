@@ -24,7 +24,7 @@ def load_frontmatter(path: Path) -> dict[str, Any]:
         raise ValueError(f"{path}: incomplete YAML frontmatter") from error
     metadata = yaml.safe_load(frontmatter)
     if not isinstance(metadata, dict):
-        raise ValueError(f"{path}: frontmatter must be a mapping")
+        raise TypeError(f"{path}: frontmatter must be a mapping")
     return metadata
 
 

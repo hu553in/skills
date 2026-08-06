@@ -84,11 +84,18 @@ checklist to the workspace in front of you; do not force irrelevant stack-specif
   (env files, defaults) and turns "without X" falsely green, boundary tests placed on empty cases
   where no signal exists, and smoke tests that only check artifacts parse instead of asserting
   expected content.
-- Inconsistent style, naming, terminology, localization, layering, ownership, public interfaces, or
-  error handling.
+- Inconsistent style, naming, terminology, localization, layering, ownership, separation of
+  concerns, public interfaces, or error handling.
 - Overcomplicated code, duplicated logic, unnecessary abstractions, dead paths introduced by the
   change, and places where a simpler existing construct is enough.
-- Architecture drift from patterns already used in the workspace.
+- Unfinished scaffolding that displaces working end-to-end behavior, or a knowingly disposable
+  stopgap that only works for now and is meant to be replaced later.
+- Obsolete paths preserved through compatibility layers, fallbacks, or migration paths unless
+  required by an explicit public contract, existing persisted data, a staged rollout, or a user
+  requirement.
+- Architecture drift from patterns already used in the workspace. Propose concrete best-practice or
+  architectural improvements even when they require refactoring, but require a demonstrated benefit
+  rather than churn for its own sake.
 - Unhardened invariants: missing validation, authorization, constraints, lifecycle guards, state
   transitions, transaction boundaries, type narrowing, feature flags, configuration defaults, or
   equivalent safeguards.
@@ -101,9 +108,11 @@ checklist to the workspace in front of you; do not force irrelevant stack-specif
 - Stale pinned versions in files the staged changes touch: compare pinned dependencies, actions, and
   tools against current upstream releases; internal consistency review cannot catch staleness.
 - Dependency mistakes: custom code where an existing dependency should be reused, or a lightweight
-  well-maintained dependency would materially reduce complexity. Before adding a new dependency,
-  verify current docs, compatibility, license fit, and security impact, then add it only when the
-  gain is concrete.
+  well-maintained dependency would materially reduce complexity. Before working around an installed
+  dependency or adding another one, check its current official documentation, public API, and types
+  when available; do not assume from memory that it lacks the required capability. Verify
+  compatibility, license fit, and security impact before adding a dependency, and add it only when
+  the gain is concrete.
 - Deletion, rename, or move fallout: stale imports, routes, exports, registrations, docs, generated
   wiring, permissions, fixtures, snapshots, and packaging references.
 - UI and design mismatches where UI exists: spacing, typography, color, interaction states, loading
