@@ -2,6 +2,6 @@ interface:
   display_name: 'Repo fleet standardization'
   short_description: 'Docs, tooling, and metadata cleanup'
   default_prompt:
-    'Use $repo-fleet-standardization to standardize docs, tooling configs, sync templates, and
-    GitHub metadata across related repositories without touching application code or
+    'Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation,
+    and GitHub metadata across related repositories without touching application code or
     staging/committing unrequested changes.'

@@ -19,7 +19,7 @@ Personal reusable agent skills.
 ## Repository hygiene
 
 - [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
-  docs, tooling config, shared sync templates, and GitHub metadata without touching application
+  docs, tooling config, dependency automation, and GitHub metadata without touching application
   code.
 
 ## Requirements
@@ -37,7 +37,7 @@ Then invoke a skill by name when the workflow applies:
 
 ```text
 Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
-Use $repo-fleet-standardization to standardize docs, tooling configs, sync templates, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
+Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and a complete anti-slop verification pass.
 ```
 
@@ -61,5 +61,5 @@ When adding a skill:
 1. Place it under `<skill-name>/SKILL.md`.
 2. Add agent-specific metadata under `<skill-name>/agents/` when needed.
 3. Add the skill slug to `skills.sh.json` so the skills.sh page stays organized.
-4. Run `make check`. It validates formatting, workflows, `skills.sh.json` against the official
-   schema, skill structure, and the local skills.sh listing.
+4. Run `make check`. It validates formatting, workflows, Renovate configuration, `skills.sh.json`
+   against the official schema, skill structure, and the local skills.sh listing.

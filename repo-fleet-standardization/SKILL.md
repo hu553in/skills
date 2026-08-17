@@ -1,10 +1,10 @@
 ---
 name: repo-fleet-standardization
 description: >-
-  Perform a deep multi-repository cleanup of documentation, config, tooling, shared sync templates,
+  Perform a deep multi-repository cleanup of documentation, config, tooling, dependency automation,
   and GitHub metadata without touching application code. Use when the user asks to standardize,
   audit, or clean up a fleet of repositories, READMEs, Makefiles, linters, package metadata,
-  container config, shared templates, repo topics, descriptions, tags, releases, or similar
+  container config, shared configuration, repo topics, descriptions, tags, releases, or similar
   docs/infra surfaces across related repos.
 ---
 
@@ -12,10 +12,10 @@ description: >-
 
 ## Overview
 
-Standardize a group of repositories by making docs, config, tooling, shared templates, and GitHub
-metadata match each repository's real behavior. Treat this as a repeated audit-and-cleanup loop:
-inventory everything first, change the source of truth when one exists, verify every edited surface,
-then do another pass for drift and small inconsistencies.
+Standardize a group of repositories by making docs, config, tooling, dependency automation, and
+GitHub metadata match each repository's real behavior. Treat this as a repeated audit-and-cleanup
+loop: inventory everything first, change the source of truth when one exists, verify every edited
+surface, then do another pass for drift and small inconsistencies.
 
 ## Operating boundaries
 
@@ -38,8 +38,9 @@ then do another pass for drift and small inconsistencies.
   class of edits. Read-only wording such as "check", "look", "audit", "proposal", or "nothing, just
   verify" does not.
 - Before any write command, confirm it is covered by the current request. This includes
-  `apply_patch`, formatters that rewrite files, `rm`/`mv`, sync tools, `gh repo edit`, `gh api`
-  `PATCH`/`PUT`/`DELETE`, release/tag deletion, and scripts that write generated files.
+  `apply_patch`, formatters that rewrite files, `rm`/`mv`, generation or synchronization tools,
+  `gh repo edit`, `gh api` `PATCH`/`PUT`/`DELETE`, release/tag deletion, and scripts that write
+  generated files.
 - Never run `git add`, `git restore --staged`, `git reset`, `git commit`, `git push`, destructive
   checkout/restore commands, or equivalent index/history mutations unless the user explicitly asks
   for that operation.
@@ -53,7 +54,7 @@ then do another pass for drift and small inconsistencies.
 ## Workflow
 
 1. Discover the repository set and classify it by stack, toolchain, runtime, deployment role,
-   shared-template role, metadata-only role, or unique one-off role.
+   shared-source role, metadata-only role, or unique one-off role.
 2. Capture state before edits: `git status -sb`, staged/unstaged names, remotes, and relevant GitHub
    metadata. Preserve the staged index exactly unless the user asks otherwise. The user may stage or
    unstage changes while you work; index drift you did not cause is expected, not an incident.
@@ -61,13 +62,13 @@ then do another pass for drift and small inconsistencies.
    report.
 3. Build a merged file-class checklist from the actual repos before judging completeness. Include
    docs, package metadata, linters, task runners, CI, container config, dependency automation,
-   generated-file config, sync templates, and GitHub metadata.
+   generated-file config, shared configuration, and GitHub metadata.
 4. For each class, compare all applicable repos side by side. Separate justified repo-specific
    differences from accidental drift. Check what should exist but does not: a surface missing from
    one repo while siblings have it (license, ignore entries, dependency automation, docs for an
    option) is drift too.
-5. If a file is sync-managed, edit the source template or sync config instead of the generated
-   target. Do not patch downstream copies unless the user explicitly asks.
+5. If a file is generated or centrally managed, edit its authoritative source first. Patch target
+   copies only when the user explicitly asks or no central update mechanism exists.
 6. Apply small, repo-native edits only when the current request authorizes writes. Prefer deleting
    stale or duplicative docs over expanding prose.
 7. Repeat the pass after edits. Re-read the changed files and the comparable files in sibling repos.
@@ -82,13 +83,14 @@ Collect these surfaces when they exist:
 - README files, docs, badges, install/run/test commands, feature lists, warnings, and UI text that
   duplicates docs.
 - Shared governance and instruction files such as agent instructions, license, code of conduct,
-  contributing docs, and security docs. If the user says to ignore or sync-manage them, do that.
+  contributing docs, and security docs. If the user says to ignore or centrally manage them, do
+  that.
 - Package and tool config: package manifests, lockfiles, tool-version files, task runners, formatter
   config, linter config, test config, generated-code config, and language-specific project config.
 - Infra config around the project, not runtime services for their own sake: GitHub Actions,
-  dependency automation, container build/runtime config, deployment scripts, sync config, repo
-  templates, and release/tag settings. In workflows, check concurrency guards, timeouts, and pinned
-  action versions.
+  dependency automation, container build/runtime config, deployment scripts, shared-source config,
+  repo templates, and release/tag settings. In workflows, check permissions, triggers, job wiring,
+  updater coverage, and adherence to the repository's established action reference policy.
 - Example configs and other files prone to leaked personal data: examples use neutral placeholder
   values; hunt real names, tokens, and personal configs that leaked into reusable repos.
 - Repository metadata: GitHub description, topics, homepage, visibility, releases, tags, and
@@ -107,17 +109,18 @@ Collect these surfaces when they exist:
 - When README text describes UI behavior, welcome text, CLIs, or generated output, verify the real
   code/config that produces it before changing the docs.
 
-## Shared sync sources
+## Centrally managed sources
 
-- Treat the shared config/template repository as the source of truth for managed files.
-- Inspect the sync manifest before editing targets. Use target repo changes only to verify what the
-  template currently renders.
+- Apply this section only when the fleet has an explicit generation or synchronization mechanism.
+- Treat its shared config or template repository as the source of truth for managed files.
+- Inspect the manifest before editing targets. Use target repo changes only to verify what the
+  authoritative source currently renders.
 - Keep template names and folder layout boring and discoverable. Use one naming rule consistently,
   but allow exceptions when identical downstream filenames need distinguishable templates.
 - Validate rendered variants, not only template text. For templated config, render representative
   repos and check whitespace-sensitive formats.
-- Do not sync files that are intentionally generated by standard tooling or updated by dependency
-  automation unless the user explicitly wants that tradeoff.
+- Do not centrally manage files that are intentionally generated by standard tooling or updated by
+  dependency automation unless the user explicitly wants that tradeoff.
 
 ## GitHub metadata
 

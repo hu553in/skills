@@ -105,8 +105,9 @@ checklist to the workspace in front of you; do not force irrelevant stack-specif
   rendering, cache invalidation mistakes, repeated computation, or missing resource bounds.
 - Security and data-integrity issues, especially authorization, secrets, injection surfaces, unsafe
   deserialization, path handling, migration compatibility, and sensitive logging.
-- Stale pinned versions in files the staged changes touch: compare pinned dependencies, actions, and
-  tools against current upstream releases; internal consistency review cannot catch staleness.
+- Stale pinned versions in files the staged changes touch: verify updater ownership and coverage
+  first. Compare dependencies, actions, and tools against current upstream releases only when no
+  updater owns them; internal consistency review cannot catch uncovered staleness.
 - Dependency mistakes: custom code where an existing dependency should be reused, or a lightweight
   well-maintained dependency would materially reduce complexity. Before working around an installed
   dependency or adding another one, check its current official documentation, public API, and types
