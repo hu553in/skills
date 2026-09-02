@@ -22,6 +22,12 @@ Personal reusable agent skills.
   docs, tooling config, dependency automation, and GitHub metadata without touching application
   code.
 
+## Writing
+
+- [`human-engineering-chat-updates`](human-engineering-chat-updates/SKILL.md): conversational
+  engineering status updates, research summaries, and findings for team chats without profanity,
+  corporate filler, or robotic phrasing.
+
 ## Requirements
 
 - Bun for installation and repository checks
@@ -39,6 +45,7 @@ Then invoke a skill by name when the workflow applies:
 Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and a complete anti-slop verification pass.
+Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat update without profanity, corporate filler, or robotic phrasing.
 ```
 
 ## Repository layout

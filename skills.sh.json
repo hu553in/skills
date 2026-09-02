@@ -16,6 +16,11 @@
       "title": "Repository Hygiene",
       "description": "Skills for standardizing repository docs, tooling, and metadata.",
       "skills": ["repo-fleet-standardization"]
+    },
+    {
+      "title": "Writing",
+      "description": "Skills for clear, natural engineering communication.",
+      "skills": ["human-engineering-chat-updates"]
     }
   ]
 }

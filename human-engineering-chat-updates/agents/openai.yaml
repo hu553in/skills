@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Human engineering chat updates'
+  short_description: 'Natural engineering updates for team chats'
+  default_prompt:
+    'Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat
+    update without profanity, corporate filler, or robotic phrasing.'
