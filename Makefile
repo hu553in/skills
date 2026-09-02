@@ -3,7 +3,7 @@
 PRETTIER := bunx prettier -u
 ACTIONLINT := bunx github-actionlint
 RUFF := uvx ruff
-PYTHON_FILES := scripts/check_skills.py
+PYTHON_FILES := scripts/*.py
 
 .PHONY: lint
 lint:
@@ -22,6 +22,7 @@ check-config:
 	git config --file .gitconfig --list >/dev/null
 	DISABLE_TELEMETRY=1 bunx skills add . --list
 	uvx check-jsonschema --schemafile https://skills.sh/schemas/skills.sh.schema.json skills.sh.json
+	uv run --with pyyaml python -m unittest discover -s scripts
 	uv run --with pyyaml python scripts/check_skills.py
 
 .PHONY: check-workflows

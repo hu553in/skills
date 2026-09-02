@@ -15,14 +15,14 @@ def load_yaml(path: Path) -> Any:
 
 
 def load_frontmatter(path: Path) -> dict[str, Any]:
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---\n"):
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0] != "---":
         raise ValueError(f"{path}: missing YAML frontmatter")
     try:
-        _, frontmatter, _ = text.split("---", 2)
+        end = lines.index("---", 1)
     except ValueError as error:
         raise ValueError(f"{path}: incomplete YAML frontmatter") from error
-    metadata = yaml.safe_load(frontmatter)
+    metadata = yaml.safe_load("\n".join(lines[1:end]) + "\n")
     if not isinstance(metadata, dict):
         raise TypeError(f"{path}: frontmatter must be a mapping")
     return metadata
