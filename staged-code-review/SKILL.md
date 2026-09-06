@@ -1,10 +1,10 @@
 ---
 name: staged-code-review
 description: >-
-  Perform an exhaustive iterative code review of all staged Git changes, fix every actionable issue
-  found, and leave all new fixes unstaged. Use when the user asks for full review of staged changes,
-  pre-commit review, release-prep review of staged changes, or similar staged-review requests
-  covering correctness, tests, architecture, consistency, performance, invariants, user experience,
+  Review staged Git changes within the requested scope, fix actionable issues when authorized, and
+  leave all new fixes unstaged. Use when the user asks for full review of staged changes, pre-commit
+  review, release-prep review of staged changes, or similar staged-review requests covering
+  correctness, tests, architecture, consistency, performance, invariants, user experience,
   documentation, and cleanup while preserving the staged index.
 ---
 
@@ -12,20 +12,25 @@ description: >-
 
 ## Overview
 
-Review staged changes as the primary scope, fix every actionable issue, and repeat until a full pass
-finds nothing else to improve. Keep the workflow portable: derive tools, conventions, and validation
-from the current workspace instead of assuming a stack, file layout, product domain, absolute path,
-or implementation detail. Preserve the user's staged index exactly: never stage, unstage, reset, or
-otherwise rewrite staged entries unless the user explicitly asks.
+Review staged changes as the primary scope, resolve actionable issues when authorized, and verify
+the final result. A full review covers all staged changes; honor narrower user boundaries. Keep the
+workflow portable: derive tools, conventions, and validation from the current workspace instead of
+assuming a stack, file layout, product domain, absolute path, or implementation detail. Preserve the
+user's staged index exactly: never stage, unstage, reset, or otherwise rewrite staged entries unless
+the user explicitly asks.
 
 ## Request mode
 
-- Default to review-and-fix mode when the user asks for a full staged review, asks to fix findings,
-  or asks to keep going until no actionable issues remain.
-- If the user explicitly asks for read-only review, proposal-only output, or "do not change
-  anything", do not edit files. Report findings with concrete file and line references instead.
-- Do not treat approval from an earlier turn as permission to stage, unstage, commit, push, reset,
-  or perform any other index/history mutation in the current turn.
+- Default to read-only mode for staged reviews, including full reviews. Report findings with
+  concrete file and line references without editing files.
+- Use review-and-fix mode when the user asks to fix findings or explicitly authorizes edits.
+  Requests for another pass or to keep reviewing do not grant edit permission by themselves.
+  Explicit read-only or proposal-only instructions override earlier edit authorization.
+- Explicit user instructions take precedence over this skill's defaults. Authorization persists
+  within the agreed task until completed or revoked; never infer permission for index or history
+  mutations from a review request alone.
+- Resolve routine choices independently and continue authorized work. If an instruction blocks
+  completion, link and quote it, explain why it applies, and complete independent work first.
 
 ## Starting state
 
@@ -36,27 +41,28 @@ otherwise rewrite staged entries unless the user explicitly asks.
    - `git diff --cached --stat`
    - `git diff --name-status`
    - `git diff --cached --check`
-3. Treat `git diff --cached` as the authoritative staged review scope. Keep the initial staged
-   name/status and stat in mind so the final report can say whether the staged scope changed during
-   the review. If `git diff --cached --check` reports whitespace or conflict-marker issues, keep the
-   output as review findings instead of abandoning the pass.
+3. Treat `git diff --cached` as the source of staged changes and apply any narrower user scope. Keep
+   the initial staged name/status and stat in mind so the final report can say whether the staged
+   scope changed during the review. If `git diff --cached --check` reports whitespace or
+   conflict-marker issues, keep the output as review findings instead of abandoning the pass.
 4. Treat unstaged user changes as separate context. Do not overwrite them; the ask-before-clobbering
    rule is in Index safety.
 5. Stop early only when there are no staged changes, and say that clearly.
 
 ## Review loop
 
-Repeat this loop until a complete iteration finds no actionable issues:
+Perform a complete review of the requested scope, then revisit areas affected by fixes:
 
-1. Read the full staged diff and the surrounding files, not only the changed hunks.
+1. Read the full staged diff within the requested scope and the surrounding code needed to
+   understand it, not only isolated changed lines.
 2. Discover related surfaces with the best tools available in the workspace. Prefer semantic code
    indexes or language-aware navigation when available; use text search for literals, config,
    documentation, and generated artifacts. Do not assume any particular framework or directory
    structure.
 3. Check consistency across every behavior, interface, data shape, UI surface, configuration, and
    document touched or implied by the staged changes.
-4. Fix each issue with the smallest change that follows the workspace's existing conventions and
-   removes the root cause.
+4. In review-and-fix mode, fix each issue with the smallest change that follows the workspace's
+   existing conventions and removes the root cause. In read-only mode, report it without edits.
 5. Keep every fix unstaged. Use `git status -sb`, `git diff --cached`, and `git diff` after edits to
    track the current staged scope and understand the combined end state.
 6. If the staged diff changes mid-review, that is usually the user staging or unstaging while you
@@ -65,8 +71,14 @@ Repeat this loop until a complete iteration finds no actionable issues:
    the change in the final report.
 7. Run the workspace's established validation commands. Prefer existing task runners, CI-equivalent
    checks, linters, formatters, and tests over ad hoc commands.
-8. Re-read the staged diff plus the new unstaged fixes. Continue the loop until there are no bugs,
-   no missing hardening, no style mismatches, no weak tests, and no useful simplifications left.
+8. Check the final diff for consistency and verify affected behavior and dependencies. Reopen
+   cleared areas only when a change or new evidence affects them. Finish when the requested scope is
+   covered, authorized fixes are complete, and required checks are complete. In read-only mode,
+   report findings; report blockers for any authorized fix that cannot be completed. Do not extend
+   the task to speculative hardening or optional improvements.
+
+For substantial reviews, delegate independent areas when tools are available and coordination saves
+work. Preserve the same scope and index boundaries for every agent and reconcile findings centrally.
 
 ## Review checklist
 
@@ -133,25 +145,34 @@ result. Use the existing dev command or preview workflow, then verify representa
 mobile widths with available browser or screenshot tools. Verify against a fresh or cache-busted
 load; a cached page shows stale output and falsifies the check in both directions. Check for
 overlap, clipped text, layout jumps, inconsistent tokens, broken hover/focus/disabled states, and
-responsive regressions. Fix visual problems and repeat the rendered check. When available, inspect
-runtime logs or browser console output before claiming the UI is clean.
+responsive regressions. When edits are authorized, fix visual problems and recheck affected states.
+When available, inspect runtime logs or browser console output before claiming the UI is clean.
 
 ## Validation
 
 - Use the strongest existing validation path that is practical for the changed scope.
 - When the workspace defines one command that runs all its checks with autofixes, prefer it over
-  running individual tools and fixing their output by hand.
+  running individual tools and fixing their output by hand only when its edits are authorized and
+  scoped. Use non-mutating checks for read-only reviews and preserve unrelated user work.
 - Treat tool output defensively: validate content, not only exit codes; some tools print errors to
   stdout and exit zero.
-- Prefer targeted checks during iteration and a broader check before finishing when feasible.
+- Scale checks to the changed behavior and risk, including required project checks. After they pass,
+  repeat or broaden them only for new changes, failures, or a specific unresolved concern.
 - Do not claim a check passed unless it actually ran.
+- Distinguish the staged snapshot from the combined worktree. Checks run in the worktree validate
+  that state, not necessarily the staged snapshot. If unstaged changes could mask a staged defect,
+  verify the staged version separately when feasible without changing the user's index or worktree;
+  otherwise report that limitation. Do not require isolation when the difference is irrelevant.
 - If a check cannot run, report why and keep reviewing what can still be verified locally.
 
 ## Stop condition
 
-Stop only after one full clean pass over the staged diff plus any new unstaged fixes finds no
-actionable issues. If a remaining question depends on product, policy, access, credentials, or an
-external system that cannot be verified locally, report it explicitly instead of guessing.
+Finish after covering the requested scope, checking the final diff and completing relevant
+validation. Complete actionable in-scope fixes in review-and-fix mode; report findings in read-only
+mode and genuine blockers or verification limits in either mode. Do not claim perfection. An
+explicitly requested new full pass covers the full scope again. If a remaining question depends on
+product, policy, access, credentials, or an external system that cannot be verified locally, report
+it explicitly instead of guessing.
 
 ## Index safety
 
@@ -170,9 +191,10 @@ external system that cannot be verified locally, report it explicitly instead of
 
 Report:
 
-- what was fixed, grouped by file or concern;
+- findings first in read-only mode, or what was fixed in review-and-fix mode, grouped by concern;
 - which validation commands ran and whether they passed;
 - whether any checks could not be run;
-- that new fixes were left unstaged, and whether the staged scope changed during the review (the
-  user staging or unstaging mid-review is normal and only needs a mention);
+- which state was validated, whether new fixes were left unstaged, and whether the staged scope
+  changed during the review (the user staging or unstaging mid-review is normal and only needs a
+  mention);
 - any remaining risks only when they are real and actionable.

@@ -1,6 +1,7 @@
 # Implementation recipes and verification
 
-Use these details for fragile effects and the final point-by-point rendered check.
+Use the applicable sections for fragile effects and rendered verification within the requested
+scope.
 
 ## Contents
 
@@ -63,17 +64,19 @@ For every clip-path, notch, overflow hidden, fixed height, mask, or overlapping 
 
 ## Feather a full-bleed image into the page
 
-The source's verified seam-removal recipe needed all four conditions together. Preserve the
-mechanism, then tune the measurements to the actual image and composition:
+For an image intended to blend into the page, remove accidental seams without losing the subject or
+distorting the composition. The source used the following recipe for one specimen; the measurements
+and technique are examples, not universal requirements:
 
-1. **Mask the image itself**: Use mask-image with a vertical gradient. A color overlay leaves opaque
-   pixels beneath it and preserves the seam.
-2. **Use a long, finely eased fade**: Fade roughly 30 percent at each end with at least 10 stops.
-   Keep a full-opacity middle, for example opaque around 31 percent through 65 percent.
-3. **Make the section tall enough**: A working reference used about 116vh so the two long fades did
-   not consume the image.
-4. **Keep one continuous page color**: Sections above and below must reveal the same surface through
-   the transparent image edges.
+1. **Mask the image itself**: The reference used mask-image with a vertical gradient to reveal the
+   page surface through the edges.
+2. **Tune the fade**: The reference faded roughly 30 percent at each end with at least 10 stops and
+   kept an opaque middle around 31 percent through 65 percent. Use only the stops and fade length
+   the actual image needs.
+3. **Preserve the subject**: The reference used about 116vh to accommodate its fades. Size the
+   section for the current content and viewport instead of copying that height.
+4. **Match the adjoining surfaces**: The reference revealed one continuous page color through both
+   edges. Make each edge blend into its actual adjoining surface.
 
 Keep any text-legibility scrim local to the text and fade it back to transparent before both image
 edges. A partial-opacity scrim ending at the section boundary creates a new hard band. Use a strong,
@@ -174,7 +177,8 @@ and falsifies the check in both directions.
 - Grain stays behind readable content.
 - Shadows fade seamlessly from one light source.
 - Glass has a meaningful backdrop and no blur, leak, halo, or transition defects.
-- Image edges feather with no top or bottom seam.
+- Images intended to blend into the page have no accidental edge seams; deliberately framed crops
+  may end hard.
 
 ### Interaction
 
@@ -207,7 +211,8 @@ and falsifies the check in both directions.
 - For product and admin surfaces, confirm the token system, information architecture, state model,
   data display, navigation, and interaction conventions belong to one operational world. Do not
   require scenery or a decorative artifact.
-- Ask whether the result could be reskinned for an unrelated product. If yes, redesign the generic
-  parts.
+- Ask whether identity-bearing choices could be reskinned for an unrelated product. If yes, revise
+  them within the authorized scope, or report them in an audit. Preserve familiar task primitives
+  and intentional design-system consistency.
 - Confirm the result is not merely clean. It must contain a brief-specific point of view and at
   least one authored decision appropriate to its surface.

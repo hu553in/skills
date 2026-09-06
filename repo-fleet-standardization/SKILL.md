@@ -13,41 +13,44 @@ description: >-
 ## Overview
 
 Standardize a group of repositories by making docs, config, tooling, dependency automation, and
-GitHub metadata match each repository's real behavior. Treat this as a repeated audit-and-cleanup
-loop: inventory everything first, change the source of truth when one exists, verify every edited
-surface, then do another pass for drift and small inconsistencies.
+GitHub metadata match each repository's real behavior. Inventory the requested scope first, change
+the source of truth when edits are authorized and one exists, then verify edited surfaces and their
+relationships for drift and inconsistencies.
 
 ## Operating boundaries
 
 - Follow the user's scope literally. If they say docs/config/infra only, do not edit application
   code. Inspect code only when docs or metadata claims need to be verified against reality.
+- Explicit user instructions take precedence over this skill's defaults. Resolve routine choices
+  independently; if a rule blocks requested work, link and quote it and explain why it applies.
 - Preserve user-owned changes. If the worktree is dirty, identify whether changes are related before
-  editing. If a repo has active work in progress and must still be checked, use a separate worktree
-  from the requested base branch.
+  editing. Review uncommitted changes in the worktree that contains them. Use a separate worktree
+  only when an operation needs isolation and it can include the intended review or edit scope.
 - Read applicable repository and agent instruction files before working in each repository.
-- Treat dependency version drift as out of scope when an automated dependency updater owns it. When
-  no updater owns a repo, compare pinned tool and action versions against current upstream releases
-  and propose adding automation.
+- Check updater coverage for each dependency and its declaration, not merely whether the repo has an
+  updater. Treat version drift as out of scope for covered declarations. For uncovered pins, compare
+  against current upstream releases and propose adding automation.
 - Preserve badges and other user-owned README signals unless the user explicitly asks to change
   them.
 
 ## Mutation safety
 
-- Treat every filesystem or remote mutation as requiring authorization from the current user
-  request. Clear "do it", "apply", "fix", or "clean this up" instructions authorize the described
-  class of edits. Read-only wording such as "check", "look", "audit", "proposal", or "nothing, just
-  verify" does not.
-- Before any write command, confirm it is covered by the current request. This includes
-  `apply_patch`, formatters that rewrite files, `rm`/`mv`, generation or synchronization tools,
-  `gh repo edit`, `gh api` `PATCH`/`PUT`/`DELETE`, release/tag deletion, and scripts that write
-  generated files.
+- Treat every filesystem or remote mutation as requiring authorization within the agreed task scope.
+  Clear "do it", "apply", "fix", or "clean this up" instructions authorize the described class of
+  edits. Read-only wording such as "check", "look", "audit", "proposal", or "nothing, just verify"
+  does not.
+- Before any write command, determine whether the agreed scope covers it; do not ask again for
+  permission already granted. This includes `apply_patch`, formatters that rewrite files, `rm`/`mv`,
+  generation or synchronization tools, `gh repo edit`, `gh api` `PATCH`/`PUT`/`DELETE`, release/tag
+  deletion, and scripts that write generated files.
 - Never run `git add`, `git restore --staged`, `git reset`, `git commit`, `git push`, destructive
   checkout/restore commands, or equivalent index/history mutations unless the user explicitly asks
   for that operation.
 - When the user asks for a table or proposal first, stop after the proposal. Apply changes only
   after explicit approval.
 - Do not treat approval from an earlier turn as approval for a new destructive operation, a new repo
-  class, or a different remote mutation. When in doubt, ask before writing.
+  class, or a different remote mutation. Authorization for the agreed work persists until completed
+  or revoked. Complete independent authorized work before asking about a remaining scope decision.
 - If a command can write both desired files and unrelated files, either narrow it first or ask
   before running it.
 
@@ -69,12 +72,17 @@ surface, then do another pass for drift and small inconsistencies.
    option) is drift too.
 5. If a file is generated or centrally managed, edit its authoritative source first. Patch target
    copies only when the user explicitly asks or no central update mechanism exists.
-6. Apply small, repo-native edits only when the current request authorizes writes. Prefer deleting
-   stale or duplicative docs over expanding prose.
-7. Repeat the pass after edits. Re-read the changed files and the comparable files in sibling repos.
-   Many issues only become visible after the first normalization pass.
+6. Apply small, repo-native edits only within the agreed authorization. Prefer deleting stale or
+   duplicative docs over expanding prose.
+7. After edits, re-read changed files and their affected counterparts in sibling repos. Recheck
+   affected relationships; reopen cleared areas only when changes or new evidence warrant it. An
+   explicitly requested new full pass covers the full scope again.
 8. Finish with validation, GitHub metadata checks, and a concise report of changed files, metadata,
    commands run, and anything intentionally left alone.
+
+Delegate independent repositories or file classes when tools are available and coordination is
+worthwhile. Give each agent the same exclusions and mutation boundaries, avoid overlapping edits,
+and reconcile shared conventions before accepting changes.
 
 ## File-class checklist
 
@@ -139,6 +147,10 @@ Collect these surfaces when they exist:
 ## Validation
 
 Use checks that match the touched surfaces:
+
+Complete required project checks. Use non-mutating checks in read-only mode and scope any authorized
+autofixes to preserve unrelated work. Once checks pass, repeat or broaden them only for new changes,
+failures, or a specific unresolved concern.
 
 - `git status -sb`, `git diff --check`, and targeted `git diff` reviews in every edited repo.
 - JSON with `jq`; JSONC with a JSONC-aware parser or explicit trailing-comma/comment handling.

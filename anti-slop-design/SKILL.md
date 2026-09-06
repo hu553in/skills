@@ -19,10 +19,12 @@ implementation, and again before delivery.
 - Obey specific, unambiguous user direction over these defaults.
 - Resolve conflicts in this order: user and repository constraints, functional correctness and
   accessibility, brief-specific cohesion and usability, then anti-pattern defaults.
-- Read all three linked references before analyzing, reviewing, or changing an interface. They are a
-  compact, complete distillation of the source law, not optional background.
-- Tell the user in plain language that the anti-slop rules are loaded and that the final result will
-  receive a complete point-by-point re-check.
+- For a full design or full audit, read all three linked references. For a narrow change or review,
+  read the applicable sections and their exceptions; expand coverage if shared effects reach other
+  surfaces.
+- Tell the user that the anti-slop rules are being applied and state the verification scope.
+- If a rule blocks requested work, link and quote it and explain why it applies. Resolve routine
+  choices from the brief and existing system without asking for permission already granted.
 - Never use the catalog mechanically. Avoiding known tells is only the floor. Make an original,
   brief-specific choice and execute it with craft.
 
@@ -145,15 +147,19 @@ Use [references/implementation-recipes.md](references/implementation-recipes.md)
 
 Before calling the work complete:
 
-1. Re-read [references/anti-patterns.md](references/anti-patterns.md) point by point.
-2. Re-read [references/premium-patterns.md](references/premium-patterns.md) point by point.
-3. Re-read [references/implementation-recipes.md](references/implementation-recipes.md) and run
-   every applicable exact check.
+1. Check the relevant entries in [references/anti-patterns.md](references/anti-patterns.md).
+2. Check their context-specific exceptions in
+   [references/premium-patterns.md](references/premium-patterns.md).
+3. Use [references/implementation-recipes.md](references/implementation-recipes.md) for checks of
+   affected geometry, materials, states, and interactions.
 4. Compare the rendered UI, not only the code, against every applicable entry.
 5. Fix every in-scope violation, including compounded layout tells and incoherence, when the request
    authorizes changes. For an audit or review-only request, report every violation without editing.
-6. After any fix, restart this gate at item 1. Stop only when a complete pass produces no further
-   in-scope fixes.
+6. After a fix, recheck affected criteria and shared dependencies. Repeat cleared checks only for
+   new changes, failures, or a specific unresolved concern. Finish after covering the requested
+   scope and completing authorized fixes. Report findings in read-only mode and genuine blockers or
+   verification limits in either mode. A requested full audit covers the full catalog; a narrow
+   change does not require unrelated redesign or repeated full audits.
 
 Do not claim the gate passed unless it actually ran. Report any item that could not be verified and
 why.

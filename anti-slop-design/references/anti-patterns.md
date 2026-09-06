@@ -188,7 +188,8 @@ premium exceptions are in [premium-patterns.md](premium-patterns.md).
 - **Grid background**: Do not lay a faint full-page graph-paper grid behind content, even with a
   radial mask. Blueprint cues earn their place only when specific and crafted.
 - **Fixed background sheet**: A position-fixed texture that merely follows the whole scroll,
-  including behind the nav, is not a signature. It must react, transform, or be removed.
+  including behind the nav, is not a signature by itself. Keep it static when it supports the
+  composition; add motion only when useful, or remove it when it adds nothing.
 - **Flat page after hero**: Do not spend all atmosphere on the first screen and place every later
   section on one flat dark or cream fill.
 

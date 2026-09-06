@@ -14,6 +14,25 @@ def load_yaml(path: Path) -> Any:
         return yaml.safe_load(file)
 
 
+def require_text(value: Any, path: Path, field: str) -> None:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{path}: {field} must be a non-empty string")
+
+
+def validate_agent_metadata(path: Path) -> None:
+    metadata = load_yaml(path)
+    if not isinstance(metadata, dict):
+        raise TypeError(f"{path}: agent metadata must be a mapping")
+    if "interface" not in metadata:
+        return
+    interface = metadata["interface"]
+    if not isinstance(interface, dict):
+        raise TypeError(f"{path}: interface must be a mapping")
+    for field in ("display_name", "short_description", "default_prompt"):
+        if field in interface:
+            require_text(interface[field], path, f"interface.{field}")
+
+
 def load_frontmatter(path: Path) -> dict[str, Any]:
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0] != "---":
@@ -50,14 +69,13 @@ def main() -> None:
         metadata = load_frontmatter(path)
         if metadata.get("name") != slug:
             raise ValueError(f"{path}: frontmatter name must be {slug!r}")
-        if not metadata.get("description"):
-            raise ValueError(f"{path}: frontmatter description is required")
+        require_text(metadata.get("description"), path, "frontmatter description")
         if f"[`{slug}`]" not in readme:
             raise ValueError(f"README.md does not list {slug}")
 
         agent_metadata = path.parent / "agents/openai.yaml"
         if agent_metadata.is_file():
-            load_yaml(agent_metadata)
+            validate_agent_metadata(agent_metadata)
 
     print(f"Validated {len(skills)} skills")
 

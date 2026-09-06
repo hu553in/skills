@@ -8,13 +8,13 @@ Personal reusable agent skills.
 ## Design
 
 - [`anti-slop-design`](anti-slop-design/SKILL.md): distinctive, cohesive interface design,
-  implementation, refactoring, and review with a complete anti-pattern audit and rendered
-  verification.
+  implementation, refactoring, and review with anti-pattern checks and rendered verification matched
+  to the requested scope.
 
 ## Code quality
 
-- [`staged-code-review`](staged-code-review/SKILL.md): exhaustive iterative review of staged Git
-  changes that fixes actionable issues while preserving the staged index.
+- [`staged-code-review`](staged-code-review/SKILL.md): thorough review of staged Git changes,
+  read-only by default, with fixes on request while preserving the staged index.
 
 ## Repository hygiene
 
@@ -42,9 +42,10 @@ bunx skills add hu553in/skills
 Then invoke a skill by name when the workflow applies:
 
 ```text
-Use $staged-code-review to iteratively review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
+Use $staged-code-review to review my staged changes and report findings without editing files.
+Use $staged-code-review to review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
-Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and a complete anti-slop verification pass.
+Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and anti-slop verification matched to the requested scope.
 Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat update without profanity, corporate filler, or robotic phrasing.
 ```
 

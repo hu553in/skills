@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from check_skills import load_frontmatter
+from check_skills import load_frontmatter, require_text, validate_agent_metadata
 
 
 class FrontmatterTests(unittest.TestCase):
@@ -52,3 +52,42 @@ class FrontmatterTests(unittest.TestCase):
                     path.write_text(source, encoding="utf-8")
                     with self.assertRaisesRegex(error_type, message):
                         load_frontmatter(path)
+
+
+class MetadataTests(unittest.TestCase):
+    def test_requires_non_empty_text(self):
+        path = Path("SKILL.md")
+        require_text("A useful description", path, "description")
+        for value in (None, "", " \n", False, 42, ["text"], {"text": "value"}):
+            with (
+                self.subTest(value=value),
+                self.assertRaisesRegex(
+                    ValueError, "description must be a non-empty string"
+                ),
+            ):
+                require_text(value, path, "description")
+
+    def test_validates_agent_metadata_without_requiring_optional_fields(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "openai.yaml"
+            for source in (
+                "{}",
+                "interface: {}",
+                "interface:\n  display_name: Example",
+            ):
+                with self.subTest(source=source):
+                    path.write_text(source, encoding="utf-8")
+                    validate_agent_metadata(path)
+            for source in ("", "[]", "interface: []", "interface: null"):
+                with self.subTest(source=source):
+                    path.write_text(source, encoding="utf-8")
+                    with self.assertRaises(TypeError):
+                        validate_agent_metadata(path)
+            for field in ("display_name", "short_description", "default_prompt"):
+                for value in ('" "', "null", "42", "true", "[text]", "{text: value}"):
+                    with self.subTest(field=field, value=value):
+                        path.write_text(
+                            f"interface:\n  {field}: {value}\n", encoding="utf-8"
+                        )
+                        with self.assertRaisesRegex(ValueError, f"interface.{field}"):
+                            validate_agent_metadata(path)
