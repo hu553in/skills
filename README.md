@@ -52,6 +52,8 @@ Use $human-engineering-chat-updates to turn technical facts into a concise, natu
 ## Repository layout
 
 - `<skill-name>/SKILL.md` contains the reusable workflow.
+- `<skill-name>/references/` holds conditional guidance and examples, linked from the entrypoint
+  with instructions on when to read them.
 - `<skill-name>/agents/openai.yaml` contains the OpenAI agent prompt metadata.
 - `skills.sh.json` groups skills on the skills.sh repository page. It does not change CLI
   installation or any `SKILL.md` content.
@@ -69,7 +71,8 @@ When adding a skill:
 1. Place it under `<skill-name>/SKILL.md`.
 2. Add agent-specific metadata under `<skill-name>/agents/` when needed.
 3. Add the skill slug to `skills.sh.json` so the skills.sh page stays organized.
-4. Run `make check`. It validates formatting, workflows, Renovate configuration, `skills.sh.json`
+4. Add the skill to the appropriate catalog section in this README.
+5. Run `make check`. It validates formatting, workflows, Renovate configuration, `skills.sh.json`
    against the official schema, skill structure, and the local skills.sh listing.
 
 `make test` runs the validator's unit tests and is included in `make check`. Use `make lint-fix` for

@@ -28,13 +28,10 @@ scope.
 
 ## Clear every cut
 
-For every clip-path, notch, overflow hidden, fixed height, mask, or overlapping section:
-
-1. Measure how much visible area the cut removes.
-2. Pad live content clear by more than that amount.
-3. Keep continuing content on the layer that stays visible.
-4. Zoom into every affected edge and corner and inspect it pixel by pixel.
-5. Check headline caps, descenders, focus rings, controls, shadows, and translated states.
+For affected clip-paths, notches, overflow hiding, fixed heights, masks, or overlaps, keep live
+content on the visible layer with padding greater than the removed area. Inspect affected edges,
+zooming when needed to resolve clipping of caps, descenders, focus rings, controls, or shadows;
+include translated content where supported.
 
 ## Align parallel columns
 
@@ -65,18 +62,15 @@ For every clip-path, notch, overflow hidden, fixed height, mask, or overlapping 
 ## Feather a full-bleed image into the page
 
 For an image intended to blend into the page, remove accidental seams without losing the subject or
-distorting the composition. The source used the following recipe for one specimen; the measurements
-and technique are examples, not universal requirements:
+distorting the composition. Adapt the technique to the image and layout:
 
-1. **Mask the image itself**: The reference used mask-image with a vertical gradient to reveal the
-   page surface through the edges.
-2. **Tune the fade**: The reference faded roughly 30 percent at each end with at least 10 stops and
-   kept an opaque middle around 31 percent through 65 percent. Use only the stops and fade length
-   the actual image needs.
-3. **Preserve the subject**: The reference used about 116vh to accommodate its fades. Size the
-   section for the current content and viewport instead of copying that height.
-4. **Match the adjoining surfaces**: The reference revealed one continuous page color through both
-   edges. Make each edge blend into its actual adjoining surface.
+1. **Mask the image itself**: Use mask-image with a vertical gradient to reveal the page surface
+   through the edges.
+2. **Tune the fade**: Use only the stops and fade length the actual image needs, keeping the subject
+   clear and opaque.
+3. **Preserve the subject**: Size the section for the current content and viewport, allowing room
+   for the fades without cropping important detail.
+4. **Match the adjoining surfaces**: Make each edge blend into its actual adjoining surface.
 
 Keep any text-legibility scrim local to the text and fade it back to transparent before both image
 edges. A partial-opacity scrim ending at the section boundary creates a new hard band. Use a strong,
@@ -84,10 +78,9 @@ controlled text shadow for the remaining legibility when appropriate.
 
 ## Build liquid glass deliberately
 
-The following reference values describe two glass-button variants over a real photographic backdrop.
-Translate them to the platform rather than copying blindly. Geist and the blue/cyan values belong to
-that measured specimen; they are not type or palette recommendations. Substitute the current design
-system and re-tune the material.
+The following values illustrate two glass-button variants over a photographic backdrop. Translate
+them to the platform rather than copying blindly. Geist and the blue/cyan values are examples, not
+type or palette recommendations. Substitute the current design system and re-tune the material.
 
 Shared base:
 
@@ -142,10 +135,11 @@ glow, and hover or press state pops.
 
 ## Rendered verification matrix
 
-Before delivery, run the actual interface. Cover every in-scope surface and representative affected
-uses of shared primitives with the applicable checks below; do not invent unsupported form factors,
-themes, or states. Verify against a fresh or cache-busted load; a cached page shows stale styling
-and falsifies the check in both directions.
+Use this matrix for rendered changes or audits, selecting checks for the affected behavior and risk.
+Cover declared surfaces and representative affected uses of shared primitives; do not expand a local
+styling fix into testing every unchanged control. Do not invent unsupported form factors, themes, or
+states. Confirm the loaded interface includes the current changes; reload or bypass stale caches
+when needed. If it cannot run, report the limits of supplied renders and code review.
 
 ### Viewports
 
@@ -182,9 +176,11 @@ and falsifies the check in both directions.
 
 ### Interaction
 
-- Activate every in-scope button, tab, toggle, accordion, slider, link, and form control on the
-  affected surface. Confirm the expected state change, navigation, submission, cancellation, or
-  recovery, not merely a visual response.
+- Exercise affected buttons, tabs, toggles, accordions, sliders, links, and form controls; for a
+  full interaction audit, cover every control in the declared scope. Confirm expected state changes,
+  navigation, submission, cancellation, or recovery, not merely a visual response. Use disposable
+  fixtures or a safe test environment for mutations; verification does not authorize live payments,
+  messages, publication, deletion, or changes to access.
 - Test pointer, keyboard, touch, focus-visible, hover, active, disabled, loading, success, and error
   states where applicable.
 - Confirm controls keep semantic names, roles, state announcements, logical focus order, and usable
@@ -202,7 +198,8 @@ and falsifies the check in both directions.
 
 ### Anti-template gate
 
-- Compare every screen against [anti-patterns.md](anti-patterns.md).
+- Compare affected screens against relevant entries in [anti-patterns.md](anti-patterns.md); use the
+  whole catalog for a requested full audit.
 - Look for compounds: default hero plus icon-card row plus pricing plus FAQ plus CTA slab plus
   standard footer.
 - For marketing, editorial, and brand surfaces, confirm the palette, type voice, signature artifact,
@@ -214,5 +211,5 @@ and falsifies the check in both directions.
 - Ask whether identity-bearing choices could be reskinned for an unrelated product. If yes, revise
   them within the authorized scope, or report them in an audit. Preserve familiar task primitives
   and intentional design-system consistency.
-- Confirm the result is not merely clean. It must contain a brief-specific point of view and at
-  least one authored decision appropriate to its surface.
+- For new visual directions, confirm a brief-specific point of view. For constrained changes,
+  preserve the existing direction instead of adding novelty to pass a gate.

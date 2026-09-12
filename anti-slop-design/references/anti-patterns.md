@@ -1,8 +1,10 @@
 # Anti-pattern catalog
 
-Use this as a complete audit catalog. A listed technique is not universally forbidden, but its
-default, copied, uncrafted, or context-free form is slop. User direction wins. Context-specific
-premium exceptions are in [premium-patterns.md](premium-patterns.md).
+Use relevant entries for a focused change or the whole catalog for a requested full audit. A listed
+technique is not universally forbidden: diagnose its copied or context-free use, not its mere
+presence. Preserve user choices and established design-system consistency; this catalog does not
+authorize a redesign. Consult [premium-patterns.md](premium-patterns.md) when an exception affects
+the decision.
 
 ## Contents
 
@@ -104,8 +106,8 @@ premium exceptions are in [premium-patterns.md](premium-patterns.md).
   floor change is part of the composition. Do not put a gradient on every boundary.
 - **Hard image seams**: When a full-bleed image is meant to blend into the page, dissolve it into a
   continuous surface instead of leaving an accidental horizontal band. A deliberately framed crop
-  may end hard. Use the exact recipe in [implementation-recipes.md](implementation-recipes.md) for
-  the blended case.
+  may end hard. Use the adaptable recipe in [implementation-recipes.md](implementation-recipes.md)
+  for the blended case.
 - **Banded gradients**: Dither large transitions with subtle grain. Visible bands read as cheap.
 - **Grain over content**: Put noise on the substrate, behind text, controls, icons, and product UI.
   A deliberate grain mask on one display word is the narrow exception.
@@ -258,8 +260,8 @@ premium exceptions are in [premium-patterns.md](premium-patterns.md).
 ## Final meta-check
 
 - Ask whether this font, layout, component stack, or interaction was copied from an unrelated brief
-  without a brief-specific reason. If yes, change it. Within one product, preserve intentional
-  design-system consistency.
+  without a brief-specific reason. Correct it only within authorized design work; report it in a
+  read-only audit. Within one product, preserve intentional design-system consistency.
 - Ask whether each major choice follows from this brief. If it could be swapped onto another
   product, it is not specific enough.
 - Do not use this catalog as a negative-only checklist. An expressive page with no signature,

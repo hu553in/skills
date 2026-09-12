@@ -1,174 +1,126 @@
 ---
 name: repo-fleet-standardization
 description: >-
-  Perform a deep multi-repository cleanup of documentation, config, tooling, dependency automation,
-  and GitHub metadata without touching application code. Use when the user asks to standardize,
-  audit, or clean up a fleet of repositories, READMEs, Makefiles, linters, package metadata,
-  container config, shared configuration, repo topics, descriptions, tags, releases, or similar
-  docs/infra surfaces across related repos.
+  Audit or standardize docs, config, tooling, and metadata across related repositories, without
+  editing application code. Use for fleet-wide consistency work.
 ---
 
 # Repo fleet standardization
 
-## Overview
+Make the requested surfaces match each repository's real behavior and shared conventions. Preserve
+justified differences; consistency does not mean making every repository identical.
 
-Standardize a group of repositories by making docs, config, tooling, dependency automation, and
-GitHub metadata match each repository's real behavior. Inventory the requested scope first, change
-the source of truth when edits are authorized and one exists, then verify edited surfaces and their
-relationships for drift and inconsistencies.
+## Scope and authorization
 
-## Operating boundaries
+- Default to read-only for checks, audits, and proposals. Clear instructions to apply, fix, or clean
+  up authorize the described edits within the agreed scope. A proposal-first request ends at the
+  proposal until approved.
+- Do not edit application code. Inspect it only to verify docs or metadata claims. Honor excluded
+  repositories, file classes, and parent-owned governance or agent files.
+- Read applicable repository and agent instructions before working in each repository. Explicit user
+  instructions take precedence over skill defaults; if a rule blocks requested work, link and quote
+  it and explain its application.
+- Remote changes need independent authorization for the specific operation and scope; permission for
+  local cleanup does not authorize GitHub edits or destructive tag/release cleanup.
+- Never stage, unstage, commit, push, reset, rewrite history, or use destructive checkout/restore
+  commands without an explicit request for that operation. Make authorized edits in the worktree.
+- Check status and staged/unstaged changes before editing; preserve user-owned work and the index.
+  User staging or unstaging during the task is expected: do not investigate or normalize it.
+  Continue and mention observed changes in the report. Review uncommitted work where it exists; use
+  isolation only when needed and able to include the intended scope.
+- Authorization persists until completed or revoked, but does not extend to a new repository class,
+  destructive operation, or different remote mutation. Continue independent authorized work while a
+  remaining scope decision is unresolved; do not ask again for granted permission.
+- Writes include formatters, generators, synchronization, file moves/deletions, and API commands
+  that mutate remote state. Determine authorization from actual effects; read-only API queries are
+  not writes. Narrow commands that could modify unrelated files, or ask before running them.
 
-- Follow the user's scope literally. If they say docs/config/infra only, do not edit application
-  code. Inspect code only when docs or metadata claims need to be verified against reality.
-- Explicit user instructions take precedence over this skill's defaults. Resolve routine choices
-  independently; if a rule blocks requested work, link and quote it and explain why it applies.
-- Preserve user-owned changes. If the worktree is dirty, identify whether changes are related before
-  editing. Review uncommitted changes in the worktree that contains them. Use a separate worktree
-  only when an operation needs isolation and it can include the intended review or edit scope.
-- Read applicable repository and agent instruction files before working in each repository.
-- Check updater coverage for each dependency and its declaration, not merely whether the repo has an
-  updater. Treat version drift as out of scope for covered declarations. For uncovered pins, compare
-  against current upstream releases and propose adding automation.
-- Preserve badges and other user-owned README signals unless the user explicitly asks to change
-  them.
+## Establish coverage
 
-## Mutation safety
+Identify the requested repository set and applicable file classes from actual files. For broad fleet
+audits, account for stack, runtime, deployment, shared-source, metadata-only, and one-off roles.
+Compare applicable siblings, including missing surfaces, rather than imposing a universal template.
+For a narrow request, inspect only the surfaces and relationships needed to settle it.
 
-- Treat every filesystem or remote mutation as requiring authorization within the agreed task scope.
-  Clear "do it", "apply", "fix", or "clean this up" instructions authorize the described class of
-  edits. Read-only wording such as "check", "look", "audit", "proposal", or "nothing, just verify"
-  does not.
-- Before any write command, determine whether the agreed scope covers it; do not ask again for
-  permission already granted. This includes `apply_patch`, formatters that rewrite files, `rm`/`mv`,
-  generation or synchronization tools, `gh repo edit`, `gh api` `PATCH`/`PUT`/`DELETE`, release/tag
-  deletion, and scripts that write generated files.
-- Never run `git add`, `git restore --staged`, `git reset`, `git commit`, `git push`, destructive
-  checkout/restore commands, or equivalent index/history mutations unless the user explicitly asks
-  for that operation.
-- When the user asks for a table or proposal first, stop after the proposal. Apply changes only
-  after explicit approval.
-- Do not treat approval from an earlier turn as approval for a new destructive operation, a new repo
-  class, or a different remote mutation. Authorization for the agreed work persists until completed
-  or revoked. Complete independent authorized work before asking about a remaining scope decision.
-- If a command can write both desired files and unrelated files, either narrow it first or ask
-  before running it.
+For a full matrix audit, track each repository against its applicable areas as checked, not
+applicable, or blocked, with supporting evidence or a reason. Include this compact coverage matrix
+in the chat report so omissions remain visible. Create or update a persistent repository file for
+the matrix only when explicitly requested; narrow tasks do not require a matrix.
 
-## Workflow
+Useful coverage areas, when in scope:
 
-1. Discover the repository set and classify it by stack, toolchain, runtime, deployment role,
-   shared-source role, metadata-only role, or unique one-off role.
-2. Capture state before edits: `git status -sb`, staged/unstaged names, remotes, and relevant GitHub
-   metadata. Preserve the staged index exactly unless the user asks otherwise. The user may stage or
-   unstage changes while you work; index drift you did not cause is expected, not an incident.
-   Continue without stopping, investigating, or reverting, and mention the change in the final
-   report.
-3. Build a merged file-class checklist from the actual repos before judging completeness. Include
-   docs, package metadata, linters, task runners, CI, container config, dependency automation,
-   generated-file config, shared configuration, and GitHub metadata.
-4. For each class, compare all applicable repos side by side. Separate justified repo-specific
-   differences from accidental drift. Check what should exist but does not: a surface missing from
-   one repo while siblings have it (license, ignore entries, dependency automation, docs for an
-   option) is drift too.
-5. If a file is generated or centrally managed, edit its authoritative source first. Patch target
-   copies only when the user explicitly asks or no central update mechanism exists.
-6. Apply small, repo-native edits only within the agreed authorization. Prefer deleting stale or
-   duplicative docs over expanding prose.
-7. After edits, re-read changed files and their affected counterparts in sibling repos. Recheck
-   affected relationships; reopen cleared areas only when changes or new evidence warrant it. An
-   explicitly requested new full pass covers the full scope again.
-8. Finish with validation, GitHub metadata checks, and a concise report of changed files, metadata,
-   commands run, and anything intentionally left alone.
+- Docs and READMEs: badges, commands, feature claims, warnings, and text duplicated in UI or output.
+- Governance: licenses, contribution/security docs, and agent instructions, respecting exclusions
+  and central ownership.
+- Tooling: manifests, lockfiles, runtime versions, task runners, formatter/linter/test configs, and
+  generated-file config.
+- Infra: CI permissions, triggers, job wiring, container build/runtime config, deployment scripts,
+  dependency automation, templates, and shared configuration. Do not expand into runtime services
+  for their own sake.
+- Examples: neutral placeholders, not leaked personal names, tokens, or private configuration. Do
+  not expose secrets in findings.
+- Metadata: descriptions, topics, homepages, visibility, releases, tags, and `skills.sh` metadata.
 
-Delegate independent repositories or file classes when tools are available and coordination is
-worthwhile. Give each agent the same exclusions and mutation boundaries, avoid overlapping edits,
-and reconcile shared conventions before accepting changes.
+Check updater ownership for each dependency declaration, not merely the presence of Renovate. When
+dependencies are in scope, compare with current stable releases even for covered declarations.
+Prefer upgrades, including majors, rather than waiting for the updater. Coordinate with existing
+update PRs, keep related declarations consistent, and verify the result. Resolve fixable
+incompatibilities within authorized scope; if an upgrade requires application-code changes, report
+the needed work rather than violating this skill's boundary. Defer upgrades only for demonstrated
+blockers that cannot be resolved within scope, explaining why. Propose automation for uncovered
+declarations. Preserve intentional floating major action tags, internal reusable workflow branch
+refs, and explicit user version constraints. Read-only audits propose upgrades without applying
+them.
 
-## File-class checklist
+Read conditional guidance only when relevant:
 
-Collect these surfaces when they exist:
+- An explicit generation/synchronization mechanism manages files:
+  [Managed sources](references/managed-sources.md). Establish ownership before target edits.
+- GitHub metadata is in scope: [GitHub metadata](references/github-metadata.md). This includes
+  proposal and destructive-cleanup safeguards; loading it does not authorize remote writes.
 
-- README files, docs, badges, install/run/test commands, feature lists, warnings, and UI text that
-  duplicates docs.
-- Shared governance and instruction files such as agent instructions, license, code of conduct,
-  contributing docs, and security docs. If the user says to ignore or centrally manage them, do
-  that.
-- Package and tool config: package manifests, lockfiles, tool-version files, task runners, formatter
-  config, linter config, test config, generated-code config, and language-specific project config.
-- Infra config around the project, not runtime services for their own sake: GitHub Actions,
-  dependency automation, container build/runtime config, deployment scripts, shared-source config,
-  repo templates, and release/tag settings. In workflows, check permissions, triggers, job wiring,
-  updater coverage, and adherence to the repository's established action reference policy.
-- Example configs and other files prone to leaked personal data: examples use neutral placeholder
-  values; hunt real names, tokens, and personal configs that leaked into reusable repos.
-- Repository metadata: GitHub description, topics, homepage, visibility, releases, tags, and
-  skills.sh metadata when applicable.
+## Docs and consistency
 
-## README cleanup
+Keep READMEs short and factual. Use sections readers need, such as install, config, run, test, lint,
+deploy, maintenance, and references; keep order and sentence-case headings consistent across
+comparable repos unless a strong local convention differs.
 
-- Make READMEs short, consistent, and factual. Prefer sections that users actually need: what it is,
-  install, config, run, test, lint, deploy, maintenance, and references.
-- Derive commands from the real task runner or package scripts. Remove commands that do not exist;
-  add important commands that exist in `Makefile`, package scripts, or project-native tooling.
-- Keep section order and heading style consistent across comparable repos. Use sentence-case
-  headings unless the repo has a strong existing convention.
-- Remove duplicated philosophy, stale caveats, generic boilerplate, and descriptions that are no
-  longer true. Keep domain-specific warnings when they are justified.
-- When README text describes UI behavior, welcome text, CLIs, or generated output, verify the real
-  code/config that produces it before changing the docs.
+Derive commands from actual task runners or package scripts. Remove nonexistent commands and include
+important supported ones. Verify claims about UI, CLIs, welcome text, or generated output against
+their producing code/config. Preserve the purpose and user-selected content of badges and other
+README signals. Correct broken URLs or renamed workflow references within authorized
+standardization; removing a meaningful badge or changing what it represents requires explicit
+authorization. Retain justified domain warnings. Remove stale caveats, duplicated philosophy,
+boilerplate, and false claims rather than expanding prose.
 
-## Centrally managed sources
+## Completion and verification
 
-- Apply this section only when the fleet has an explicit generation or synchronization mechanism.
-- Treat its shared config or template repository as the source of truth for managed files.
-- Inspect the manifest before editing targets. Use target repo changes only to verify what the
-  authoritative source currently renders.
-- Keep template names and folder layout boring and discoverable. Use one naming rule consistently,
-  but allow exceptions when identical downstream filenames need distinguishable templates.
-- Validate rendered variants, not only template text. For templated config, render representative
-  repos and check whitespace-sensitive formats.
-- Do not centrally manage files that are intentionally generated by standard tooling or updated by
-  dependency automation unless the user explicitly wants that tradeoff.
+An audit is complete when the declared repository/file-class scope has been covered, justified
+differences are separated from drift, and findings or unknowns have evidence. A proposal-first task
+stops there. Authorized cleanup continues until scoped findings are resolved or explicitly left
+pending with a reason, and affected cross-file and sibling-repository relationships are consistent.
+Do not stop at the first repository or finding in a full-fleet request.
 
-## GitHub metadata
+After edits, review changed files and affected counterparts. Reopen cleared areas only for new
+changes or evidence; an explicitly requested full pass covers the whole declared scope again.
+Independent repositories/classes may be delegated when worthwhile, with shared exclusions and
+authorization boundaries, non-overlapping edits, and reconciled conventions.
 
-- For each repo, capture current metadata before proposing or applying changes:
-  `gh repo view OWNER/REPO --json description,repositoryTopics,homepageUrl,isPrivate,url`.
-- Descriptions should be concise taglines, not full README sentences. Avoid final punctuation in
-  GitHub descriptions. Do not make descriptions longer only to mirror README wording.
-- Avoid volatile descriptions such as lists of frequently changing tools or implementation details.
-- Topics should be stable, lowercase slug-like terms. Prefer broad, durable topics over a long list
-  of every dependency or tool.
-- If the user asks for a proposal first, report a table with `repo`, `current`, `proposed`, and
-  `changed`. Apply only after confirmation.
-- Remote tag or release cleanup is destructive. Only perform it when the user explicitly asks, and
-  verify before and after with `gh release list` and `git ls-remote --tags`.
+Complete required project checks and choose additional validation by the touched contract. Use
+non-mutating checks in read-only work; scope authorized autofixes to protect unrelated changes.
+Examples include:
 
-## Validation
+- Status, `git diff --check`, and targeted diff review in edited repositories.
+- JSON with `jq`, JSONC with a parser that supports comments/trailing commas, YAML/TOML parsing, and
+  `bash -n` or `shellcheck` for shell changes.
+- Native config validation, container rendering, workflow checks (including shared caller/input
+  contracts), and package-manager checks where affected.
+- Validate changed `skills.sh.json` against `https://skills.sh/schemas/skills.sh.schema.json`.
 
-Use checks that match the touched surfaces:
+Stop validation when relevant checks pass and no specific concern remains; broaden or repeat only
+for failures, new changes, or unresolved risk. Report unavailable checks or blocked scope instead of
+implying verification or silently expanding authorization.
 
-Complete required project checks. Use non-mutating checks in read-only mode and scope any authorized
-autofixes to preserve unrelated work. Once checks pass, repeat or broaden them only for new changes,
-failures, or a specific unresolved concern.
-
-- `git status -sb`, `git diff --check`, and targeted `git diff` reviews in every edited repo.
-- JSON with `jq`; JSONC with a JSONC-aware parser or explicit trailing-comma/comment handling.
-- YAML/TOML parsing for config files; `bash -n` and `shellcheck` for shell when available.
-- Tool-native validation for shared config: linter config verification, formatter/test config
-  parsing, container config rendering, workflow syntax checks, or package manager checks when
-  applicable.
-- `skills.sh.json` against `https://skills.sh/schemas/skills.sh.schema.json` when editing a skills
-  repository.
-- Explicit metadata assertions after GitHub edits: descriptions have no trailing punctuation and
-  topics match `^[a-z0-9][a-z0-9-]*$`.
-
-## Final report
-
-Report only the high-signal result:
-
-- repos touched and the class of cleanup performed;
-- files changed and remote metadata changed;
-- validation commands and their status;
-- files or classes intentionally left alone and why;
-- current git status, especially whether changes are unstaged or staged.
+Finish with repositories/files and remote metadata changed, checks actually run and their results,
+intentional exclusions or unresolved items, and current staged/unstaged status. For read-only work,
+report findings instead of changes.

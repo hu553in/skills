@@ -36,12 +36,8 @@ For expressive surfaces, build a coherent direction from the applicable parts of
    vocabulary. When they are unavailable, use clearly labeled, domain-plausible sample content and
    omit customer proof.
 
-In compact form:
-
-signature artifact + atmosphere + layered depth + character type + bespoke silhouette + treated
-nav + real specifics
-
-Missing a brief-specific signature cannot be rescued by clean spacing. Clean is the floor.
+These are composition options, not a quota of new visual elements. A constrained edit can preserve
+an existing direction; it need not invent a new signature.
 
 ## Adapt the signature to the surface
 
@@ -57,7 +53,7 @@ everywhere.
 
 ## Cohesion and field-tested direction
 
-Let these source field notes outrank optional premium moves when they conflict.
+Prioritize cohesion over optional premium moves when they conflict.
 
 - Pick one visual world and make every element serve it.
 - Hold one disciplined palette. A monochrome or tightly related family beats several unrelated
@@ -74,9 +70,8 @@ Let these source field notes outrank optional premium moves when they conflict.
 
 ## Treat the design system as a contract
 
-Treat a useful repository design document as an implementation contract, not a mood board. Derive it
-from the product that exists, then keep it aligned with the live tokens, primitives, content model,
-and interaction rules.
+When changing or reviewing a design contract, ground it in the product's live tokens, primitives,
+content model, and interaction rules. Ordinary visual edits do not require new contract documents.
 
 - State the product's operational north star and classify each surface. Marketing can be scenic;
   routine product, admin, and settings UI should be dense, scannable, calm, and immediately usable.
@@ -105,11 +100,12 @@ and interaction rules.
   and label actions by their actual result. Empty states should name what is missing and point to
   the next useful action; errors should explain what failed and offer retry or a safe exit.
 
-Use one base design contract plus small theme-specific companion documents when modes genuinely
-differ. Keep semantic token names and component behavior parallel across modes; document only the
-palette, surface hierarchy, contrast, media, and interaction exceptions. Avoid copying the whole
-base contract into each theme file. When authorized work changes the contract, keep machine-readable
-design metadata, the human-readable contract, and the live implementation in sync.
+When design-contract documents already exist or their creation is requested, keep shared rules in
+one base document and document only genuine theme-specific exceptions. Different themes alone do not
+require new documents. Keep semantic token names and component behavior parallel across modes; avoid
+copying the whole base contract into each theme file. When authorized work changes the contract,
+keep existing machine-readable design metadata, human-readable documentation, and the live
+implementation in sync.
 
 ## Type selection
 
@@ -202,13 +198,13 @@ ASCII field, glass, gradient icons, and a full-bleed scene at once usually creat
 ## Component foundations
 
 Use the project's existing accessible primitives first. Treat this named list as a dated discovery
-aid, not a required stack. Before using any item, re-check its official docs, license and access,
-supported framework and primitive base, generated files, and dependencies. If `components.json` or
-an equivalent registry config exists, preserve its style and primitive base, framework and language
-output, aliases and target paths, CSS setup and prefix, icon and RTL settings, and registry
-namespaces unless the task authorizes a change. Resolve and preview the actual namespaced item: a
-live registry need not support the configured base or component style. Keep the host project's
-working conventions.
+aid, not a required stack. When adopting or changing an integration, check its official docs,
+license and access, supported framework and primitive base, generated files, and dependencies. If
+`components.json` or an equivalent registry config exists, preserve its style and primitive base,
+framework and language output, aliases and target paths, CSS setup and prefix, icon and RTL
+settings, and registry namespaces unless the task authorizes a change. Resolve and preview the
+actual namespaced item: a live registry need not support the configured base or component style.
+Keep the host project's working conventions.
 
 - **Motion** (https://motion.dev): The current React package is motion and its React entry point is
   motion/react. Use it when springs, gestures, scroll transforms, numeric transitions, marquees, or
@@ -250,5 +246,6 @@ can work independently; adapt useful structure and behavior into the existing st
 add global Tailwind to a large existing codebase for one block.
 
 Prebuilt pieces are a head start, not a design pass. Keep accessible behavior and sound structure,
-then replace blue-purple gradients, glowy pills, fill-plus-outline button pairs, sun-moon toggles,
-tracked caps, and default hero stacks. Audit library output with the same rigor as custom code.
+then adapt identity-bearing defaults that conflict with the brief within the authorized scope. The
+anti-pattern catalog applies to library output too, with the same exceptions for deliberate user
+choices and functional task UI.

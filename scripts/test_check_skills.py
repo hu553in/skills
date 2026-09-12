@@ -1,8 +1,76 @@
+import json
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+import check_skills
 from check_skills import load_frontmatter, require_text, validate_agent_metadata
+
+
+class CatalogTests(unittest.TestCase):
+    def setUp(self):
+        directory = TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.enterContext(patch.object(check_skills, "ROOT", self.root))
+        skill = self.root / "example"
+        skill.mkdir()
+        self.skill_file = skill / "SKILL.md"
+        self.skill_file.write_text(
+            "---\nname: example\ndescription: Example skill\n---\n# Example\n",
+            encoding="utf-8",
+        )
+        (self.root / "README.md").write_text(
+            "- [`example`](example/SKILL.md)\n", encoding="utf-8"
+        )
+        self.write_groups(["example"])
+
+    def write_groups(self, *groups):
+        (self.root / "skills.sh.json").write_text(
+            json.dumps({"groupings": [{"skills": group} for group in groups]}),
+            encoding="utf-8",
+        )
+
+    def test_accepts_consistent_catalog(self):
+        with redirect_stdout(StringIO()) as output:
+            check_skills.main()
+        self.assertEqual(output.getvalue(), "Validated 1 skills\n")
+
+    def test_rejects_duplicate_slugs_across_groups(self):
+        self.write_groups(["example"], ["example"])
+        with self.assertRaisesRegex(ValueError, "duplicate skill slugs"):
+            check_skills.main()
+
+    def test_rejects_missing_and_unknown_slugs(self):
+        for slugs, message in (
+            ([], r"missing=\['example'\], unknown=\[\]"),
+            (["example", "unknown"], r"missing=\[\], unknown=\['unknown'\]"),
+        ):
+            with self.subTest(slugs=slugs):
+                self.write_groups(slugs)
+                with self.assertRaisesRegex(ValueError, message):
+                    check_skills.main()
+
+    def test_rejects_mismatched_frontmatter_name(self):
+        self.skill_file.write_text(
+            "---\nname: other\ndescription: Example skill\n---\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(ValueError, "frontmatter name must be 'example'"):
+            check_skills.main()
+
+    def test_rejects_missing_readme_entry(self):
+        (self.root / "README.md").write_text("# Skills\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "README.md does not list example"):
+            check_skills.main()
+
+    def test_rejects_empty_skill_catalog(self):
+        self.skill_file.unlink()
+        with self.assertRaisesRegex(ValueError, "no skills found"):
+            check_skills.main()
 
 
 class FrontmatterTests(unittest.TestCase):
