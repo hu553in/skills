@@ -36,7 +36,7 @@ every edit.
   anti-slop audit covers the catalog across its declared surfaces, not the entire product.
 - [Premium patterns and exceptions](references/premium-patterns.md): when choosing a new visual
   direction, judging a context-dependent exception, changing a design contract, or evaluating a
-  component foundation. The signature formula and toolkit list are options, not requirements.
+  component tool or registry. The signature formula and named tools are options, not requirements.
 - [Implementation recipes and verification](references/implementation-recipes.md): when affected
   work involves clipping, comparison alignment, centering, shadows, image blending, glass, motion,
   or a rendered-verification checklist. Adapt recipes to the existing platform.
@@ -46,9 +46,9 @@ every edit.
 - Reuse semantic tokens and accessible components. Consolidate repeated overrides at their shared
   source only when that change is in scope. Preserve parallel token and behavior contracts across
   supported themes.
-- Named libraries are examples, not reasons to install dependencies. Keep the working primitive
-  base, framework, styling system, and registry settings. Do not inject global Tailwind into a
-  mature non-Tailwind project for one block.
+- Named tools are examples, not reasons to install dependencies. Keep the working primitive base,
+  framework, styling system, and registry settings. Do not inject global Tailwind into a mature
+  non-Tailwind project for one block.
 - Use supplied or verified marks and data. Never fabricate customer proof, testimonials, metrics, or
   third-party identities. Create a first-party identity when the brief requires one. Label prototype
   data as sample and represent the actual product truthfully.

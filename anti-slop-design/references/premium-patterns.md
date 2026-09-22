@@ -13,7 +13,7 @@ one brief instead of copied as defaults.
   [Type selection](#type-selection) | [Premium forms](#premium-forms-of-common-techniques) |
   [Product-as-artifact exception](#product-as-artifact-exception)
 - [Professional with a heartbeat](#professional-with-a-heartbeat) |
-  [Component foundations](#component-foundations)
+  [Component tools and discovery](#component-tools-and-discovery)
 
 ## The signature formula
 
@@ -195,57 +195,37 @@ task:
 Do not use every premium move. Choose the smallest set that reinforces one system. Using serif,
 ASCII field, glass, gradient icons, and a full-bleed scene at once usually creates noise.
 
-## Component foundations
+## Component tools and discovery
 
-Use the project's existing accessible primitives first. Treat this named list as a dated discovery
-aid, not a required stack. When adopting or changing an integration, check its official docs,
-license and access, supported framework and primitive base, generated files, and dependencies. If
-`components.json` or an equivalent registry config exists, preserve its style and primitive base,
-framework and language output, aliases and target paths, CSS setup and prefix, icon and RTL
-settings, and registry namespaces unless the task authorizes a change. Resolve and preview the
-actual namespaced item: a live registry need not support the configured base or component style.
-Keep the host project's working conventions.
+Use the project's existing accessible primitives first. The tools below illustrate different roles,
+not a required stack or a shortlist of third-party registries. Before adopting or changing an
+integration, check its official docs, license and access, supported framework and primitive base,
+generated files, and dependencies. If `components.json` or an equivalent registry config exists,
+preserve its style and primitive base, framework and language output, aliases and target paths, CSS
+setup and prefix, icon and RTL settings, and registry namespaces unless the task authorizes a
+change. For a namespaced registry item, resolve and preview the exact item: a live registry need not
+support the configured base or component style.
 
-- **Motion** (https://motion.dev): The current React package is motion and its React entry point is
-  motion/react. Use it when springs, gestures, scroll transforms, numeric transitions, marquees, or
-  layout animation justify a runtime library.
+- **Motion** (https://motion.dev): The React package is `motion`, with features imported from
+  `motion/react`. Use it when springs, gestures, scroll transforms, numeric transitions, marquees,
+  or layout animation justify a runtime library.
 - **shadcn/ui** (https://ui.shadcn.com): This is an open-code component distribution system, not a
-  conventional component package. As of 2026-07-15, new projects default to Base UI, while Radix
-  remains supported. Inspect the existing project base and preserve it; do not migrate a working
-  Radix or Base UI project just because the default changed.
+  conventional component package. In July 2026, shadcn/ui made Base UI the default for new projects
+  while keeping Radix supported. Inspect the existing project base and preserve it; do not migrate a
+  working Radix or Base UI project just because the default changed.
 - **Base UI** (https://base-ui.com): An unstyled, accessible React primitive library that can work
   with Tailwind, CSS Modules, plain CSS, or CSS-in-JS. Consider it directly when the project needs
   headless primitives rather than shadcn's distributed component layer.
-- **Tailark** (https://tailark.com): A shadcn registry for marketing blocks and pages. The catalog
-  includes free and paid material; use a block as a structural start, not a finished art direction.
-- **motion-primitives** (https://motion-primitives.com): Reusable animated components installed by
-  CLI or copied as source. Keep content visible before animation and replace identity-bearing
-  defaults that do not fit the product.
-- **Kokonut UI** (https://kokonutui.com): Tailwind, shadcn, and Motion components installed through
-  a shadcn registry or copied as source.
-- **React Bits** (https://reactbits.dev): Animated React components and visual effects available
-  through source and registry workflows. Use individual pieces only when their motion supports the
-  concept; test static fallback, performance, and reduced-motion behavior.
-- **ogimagecn** (https://www.ogimagecn.com): Customizable Open Graph image components built on
-  Satori and distributed for shadcn-style use. Treat generated social images as a separate rendered
-  surface: verify font loading, text overflow, image constraints, localization, and metadata
-  privacy.
-- **ReUI** (https://reui.io): A broad shadcn-oriented catalog of components, application patterns,
-  data-grid pieces, blocks, and icons. Prefer the narrowest useful piece over a full template.
-- **Magic UI** (https://magicui.design): A React, TypeScript, and Tailwind collection of
-  marketing-oriented components and effects; many items depend on Motion. Keep content readable
-  before animation runs and do not let its effects become the product's identity by default.
-- **Dice UI** (https://diceui.com): Composable shadcn registry components for advanced product
-  interactions such as data display, media, editing, and drag-and-drop. As of 2026-07-15, its
-  component docs are Radix-backed; inspect compatibility before mixing them into a Base UI project.
-  Test semantics, keyboard behavior, touch, and edge cases rather than assuming a complex copied
-  control is finished.
 
-In Tailwind projects, use compatible items directly when they fit. In non-Tailwind projects, Motion
-can work independently; adapt useful structure and behavior into the existing styling system. Never
-add global Tailwind to a large existing codebase for one block.
+There are dozens of worthwhile third-party shadcn registries. Use [Shoogle](https://shoogle.dev/) to
+search components and blocks across its indexed registries for the specific behavior needed, then
+inspect candidates against the project's existing setup.
 
-Prebuilt pieces are a head start, not a design pass. Keep accessible behavior and sound structure,
-then adapt identity-bearing defaults that conflict with the brief within the authorized scope. The
-anti-pattern catalog applies to library output too, with the same exceptions for deliberate user
-choices and functional task UI.
+Use compatible components within the project's existing styling system. Motion can work without
+Tailwind. Adapt useful structure and behavior when a component's styling does not fit; do not add
+global Tailwind to a large existing codebase for one block.
+
+Treat prebuilt components as a starting point. Check their semantics, keyboard and touch behavior,
+performance, and relevant static and reduced-motion fallbacks. Adapt identity-bearing defaults that
+conflict with the brief within the authorized scope. The anti-pattern catalog applies to third-party
+components too, with the same exceptions for deliberate user choices and functional task UI.
