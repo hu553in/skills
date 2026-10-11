@@ -1,0 +1,6 @@
+interface:
+  display_name: 'Confluence ADF'
+  short_description: 'Edit Cloud pages while preserving native ADF'
+  default_prompt:
+    'Use $confluence-adf to apply the requested edit to this existing Confluence Cloud page,
+    preserving unrelated ADF content and verifying the saved version and page appearance.'

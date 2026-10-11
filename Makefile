@@ -3,7 +3,7 @@
 PRETTIER := bunx prettier -u
 ACTIONLINT := bunx github-actionlint
 RUFF := uvx ruff
-PYTHON_FILES := scripts/*.py
+PYTHON_FILES := scripts/*.py $(wildcard */scripts/*.py)
 
 .PHONY: lint
 lint:

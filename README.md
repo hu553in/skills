@@ -28,10 +28,17 @@ Personal reusable agent skills.
   engineering status updates, research summaries, and findings for team chats without profanity,
   corporate filler, or robotic phrasing.
 
+## Integrations
+
+- [`confluence-adf`](confluence-adf/SKILL.md): edit existing Confluence Cloud pages through native
+  ADF, preserve unrelated rich content, and verify the saved version and page appearance.
+
 ## Requirements
 
 - Bun for installation and repository checks
 - uv for repository maintenance
+- Python 3.10 or newer for the Confluence helper; credentials and API usage are documented in
+  [`confluence-adf`](confluence-adf/references/helper-usage.md).
 
 ## Install
 
@@ -47,6 +54,7 @@ Use $staged-code-review to review and fix my staged changes, preserve my staged 
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and anti-slop verification matched to the requested scope.
 Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat update without profanity, corporate filler, or robotic phrasing.
+Use $confluence-adf to apply the requested edit to this existing Confluence Cloud page, preserving unrelated ADF content and verifying the saved version and page appearance.
 ```
 
 ## Repository layout
@@ -54,6 +62,7 @@ Use $human-engineering-chat-updates to turn technical facts into a concise, natu
 - `<skill-name>/SKILL.md` contains the reusable workflow.
 - `<skill-name>/references/` holds conditional guidance and examples, linked from the entrypoint
   with instructions on when to read them.
+- `<skill-name>/scripts/` holds executable helpers when the workflow needs deterministic operations.
 - `<skill-name>/agents/openai.yaml` contains the OpenAI agent prompt metadata.
 - `skills.sh.json` groups skills on the skills.sh repository page. It does not change CLI
   installation or any `SKILL.md` content.
@@ -75,5 +84,6 @@ When adding a skill:
 5. Run `make check`. It validates formatting, workflows, Renovate configuration, `skills.sh.json`
    against the official schema, skill structure, and the local skills.sh listing.
 
-`make test` runs the validator's unit tests and is included in `make check`. Use `make lint-fix` for
-formatting and Ruff fixes, or `make check-fix` to apply those fixes and rerun the full gate.
+`make test` runs the validator and skill-helper tests and is included in `make check`. Use
+`make lint-fix` for formatting and Ruff fixes, or `make check-fix` to apply those fixes and rerun
+the full gate.

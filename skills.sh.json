@@ -21,6 +21,11 @@
       "title": "Writing",
       "description": "Skills for clear, natural engineering communication.",
       "skills": ["human-engineering-chat-updates"]
+    },
+    {
+      "title": "Integrations",
+      "description": "Skills for working with external services and their APIs.",
+      "skills": ["confluence-adf"]
     }
   ]
 }
