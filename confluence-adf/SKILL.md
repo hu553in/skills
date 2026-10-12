@@ -3,7 +3,7 @@ name: confluence-adf
 description: >-
   Edit existing Confluence Cloud pages through their native ADF JSON, preserving unrelated rich
   content and checking page appearance and version conflicts. Use when updating a Cloud page with
-  mentions, macros, merged cells, or comment anchors.
+  mentions, macros, merged cells, comment anchors, or new content written in Markdown.
 ---
 
 # Confluence ADF
@@ -38,8 +38,9 @@ data.
 2. Load `base.json["adf"]`, change only the requested nodes, and save the complete ADF document as
    `new.json`. Preserve unknown nodes and attributes rather than normalizing or recreating them.
    Before publication, compare the actual changed paths and assert that unaffected content is equal
-   to the baseline. Read [ADF editing details](references/adf-editing.md) when changing mentions,
-   cards, dates, tables, macros, or text with comment annotations.
+   to the baseline. Read [ADF editing details](references/adf-editing.md) when adding content
+   written in Markdown or another markup format, or when changing mentions, cards, dates, tables,
+   macros, or text with comment annotations.
 3. Review the resulting diff against the request. For a proposal, return the proposed change here.
    For an authorized publication, continue through verification.
 
@@ -52,16 +53,21 @@ data.
    overwrite or bypass approval.
 2. A successful `put` rereads and verifies the stored ADF, title, version, and appearance. Run
    `verify PAGE_ID base.json new.json` for a separate check or after an ambiguous write result.
-   Verification ignores mark ordering only. Node counts are diagnostics, not proof of preservation.
+   Verification ignores mark order and one link normalization Confluence applies on save (see
+   [helper usage](references/helper-usage.md)). Node counts are diagnostics, not proof of
+   preservation.
 3. Inspect the affected page in the UI when rendered behavior matters, including edited mentions,
-   table spans, macros, comment anchors, and width. JSON equality does not prove that a macro
-   renders or that an inline comment still targets the intended text. Report when UI checks are
-   unavailable.
+   new or rebuilt tables, table spans, macros, comment anchors, and width. When a task needs several
+   writes, check the first one in the UI before reusing its node shapes in later edits. JSON
+   equality does not prove that a macro renders or that an inline comment still targets the intended
+   text. Report when UI checks are unavailable.
 
 On a timeout or failed post-write check, read the page before retrying. Publication may already have
-succeeded. Report the mismatch and retain the baseline; do not automatically restore an old body or
-rewrite properties over newer work. Page history can restore a prior body when authorized, but page
-appearance is a separate property and needs its own recovery check.
+succeeded. Report the mismatch and retain the baseline, even when the local comparison in
+[helper usage](references/helper-usage.md) attributes it to page-link titles dropped from only some
+links; do not automatically restore an old body or rewrite properties over newer work. Page history
+can restore a prior body when authorized, but page appearance is a separate property and needs its
+own recovery check.
 
 Finish with the page link, saved version, requested changes, actual verification results, and any
 remaining mismatch. Do not claim comments or rendered content were verified from counts alone.

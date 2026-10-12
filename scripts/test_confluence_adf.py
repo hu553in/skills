@@ -2,6 +2,8 @@ import copy
 import importlib.util
 import json
 import os
+import ssl
+import sys
 import threading
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -11,6 +13,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.error import URLError
 from urllib.parse import parse_qs, urlsplit
 
 SCRIPT = (
@@ -90,6 +93,7 @@ class HelperTests(unittest.TestCase):
             appearance="full-width",
             appearance_version=3,
             draft=None,
+            draft_title=None,
             requests=[],
             error=None,
             drift=None,
@@ -194,7 +198,11 @@ class HelperTests(unittest.TestCase):
                         {
                             "id": "123",
                             "status": "draft" if is_draft else "current",
-                            "title": state.title,
+                            "title": (
+                                (state.draft_title or state.title)
+                                if is_draft
+                                else state.title
+                            ),
                             "version": {"number": state.version},
                             "body": {
                                 "atlas_doc_format": {
@@ -330,8 +338,485 @@ class HelperTests(unittest.TestCase):
         )
         code, _, error = self.put()
         self.assertEqual(code, 1)
-        self.assertIn("Unpublished draft differs", error)
+        self.assertIn("Unpublished draft differs at /content/0/content/0/text", error)
+        self.assertNotIn("A collaborator's pending change", error)
         self.assertEqual(self.writes(), [])
+
+    def test_rejects_draft_with_another_title_without_printing_it(self):
+        self.state.draft = copy.deepcopy(DOCUMENT)
+        self.state.draft_title = "Pending collaborator title"
+        code, output, error = self.put()
+        self.assertEqual(code, 1)
+        self.assertIn("Unpublished draft has another title", error)
+        self.assertNotIn("Pending collaborator title", output + error)
+        self.assertEqual(self.writes(), [])
+
+    def test_publishes_over_a_draft_that_holds_only_editor_metadata(self):
+        link = {
+            "type": "link",
+            "attrs": {"href": "https://example.atlassian.net/wiki/x/1"},
+        }
+        self.state.document["content"][1]["content"].append(
+            {"type": "text", "text": "Linked page", "marks": [link]}
+        )
+        self.base.unlink()
+        self.assertEqual(self.run_command("get", "123", str(self.base))[0], 0)
+        sent = copy.deepcopy(self.state.document)
+        sent["content"][0]["content"][0]["text"] = "Requested change"
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.state.draft = copy.deepcopy(self.state.document)
+        draft_content = self.state.draft["content"]
+        # The published macro has no macroParams; the editor adds one holding only the parent ID.
+        draft_content[2]["attrs"]["parameters"]["macroParams"] = {
+            "_parentId": {"value": "456"}
+        }
+        draft_content[1]["content"][3]["marks"][0]["attrs"]["__confluenceMetadata"] = {
+            "linkType": "page",
+            "contentTitle": "Cached title",
+        }
+        code, _, error = self.put()
+        self.assertEqual((code, error), (0, ""))
+        self.assertEqual(len(self.writes()), 1)
+        self.assertEqual(self.state.document, sent)
+
+    def test_draft_check_treats_an_empty_macro_params_as_absent(self):
+        self.state.document["content"][2]["attrs"]["parameters"]["macroParams"] = {}
+        current = self.client.page("123")
+        self.state.draft = copy.deepcopy(self.state.document)
+        del self.state.draft["content"][2]["attrs"]["parameters"]["macroParams"]
+        self.client.check_draft("123", current)
+
+    def test_draft_check_accepts_parameters_created_only_for_the_parent_id(self):
+        # The published macro has empty parameters or none at all.
+        for published in ({}, None):
+            with self.subTest(published=published):
+                attrs = self.state.document["content"][2]["attrs"]
+                if published is None:
+                    attrs.pop("parameters", None)
+                else:
+                    attrs["parameters"] = published
+                current = self.client.page("123")
+                self.state.draft = copy.deepcopy(self.state.document)
+                self.state.draft["content"][2]["attrs"]["parameters"] = {
+                    "macroParams": {"_parentId": {"value": "456"}}
+                }
+                self.client.check_draft("123", current)
+
+    def test_draft_check_ignores_editor_metadata_on_the_published_side_too(self):
+        link = {
+            "type": "link",
+            "attrs": {
+                "href": "https://example.atlassian.net/x/1",
+                "__confluenceMetadata": {},
+            },
+        }
+        self.state.document["content"][1]["content"].append(
+            {"type": "text", "text": "Linked page", "marks": [link]}
+        )
+        self.state.document["content"][2]["attrs"]["parameters"]["macroParams"] = {
+            "_parentId": {"value": "1"}
+        }
+        current = self.client.page("123")
+        self.state.draft = copy.deepcopy(self.state.document)
+        del self.state.draft["content"][2]["attrs"]["parameters"]["macroParams"]
+        del self.state.draft["content"][1]["content"][3]["marks"][0]["attrs"][
+            "__confluenceMetadata"
+        ]
+        self.client.check_draft("123", current)
+
+    def test_draft_check_ignores_editor_metadata_only_where_the_editor_adds_it(self):
+        self.state.document["content"][2]["attrs"]["parameters"]["macroParams"] = {
+            "style": {"value": "published"}
+        }
+        current = self.client.page("123")
+        # The editor adds a parent ID next to existing macro parameters.
+        self.state.draft = copy.deepcopy(self.state.document)
+        self.state.draft["content"][2]["attrs"]["parameters"]["macroParams"][
+            "_parentId"
+        ] = {"value": "456"}
+        self.client.check_draft("123", current)
+        # Cached link metadata on a mark that is not a link is a real difference.
+        self.state.draft = copy.deepcopy(self.state.document)
+        annotation = self.state.draft["content"][1]["content"][1]["marks"][1]
+        annotation["attrs"]["__confluenceMetadata"] = {"linkType": "page"}
+        with self.assertRaisesRegex(adf.ConfluenceError, "/content/1/content/1/marks"):
+            self.client.check_draft("123", current)
+        # A parent ID outside macroParams is not where the editor puts it.
+        self.state.draft = copy.deepcopy(self.state.document)
+        self.state.draft["content"][2]["attrs"]["parameters"]["_parentId"] = "456"
+        with self.assertRaisesRegex(adf.ConfluenceError, "/content/2/attrs/parameters"):
+            self.client.check_draft("123", current)
+
+    def test_link_metadata_does_not_hide_a_changed_link_target_in_the_draft(self):
+        link = {"type": "link", "attrs": {"href": "https://example.atlassian.net/x/1"}}
+        self.state.document["content"][1]["content"].append(
+            {"type": "text", "text": "Linked page", "marks": [link]}
+        )
+        current = self.client.page("123")
+        self.state.draft = copy.deepcopy(self.state.document)
+        attrs = self.state.draft["content"][1]["content"][3]["marks"][0]["attrs"]
+        attrs.update(
+            {"href": "https://example.atlassian.net/x/2", "__confluenceMetadata": {}}
+        )
+        with self.assertRaisesRegex(
+            adf.ConfluenceError, "/content/1/content/3/marks/0/attrs/href"
+        ):
+            self.client.check_draft("123", current)
+
+    @unittest.skipIf(
+        sys.version_info < (3, 12),
+        "before 3.12, json.dumps in canonical() hits the Python recursion limit first",
+    )
+    def test_differences_survive_nesting_deeper_than_the_recursion_limit(self):
+        def build(leaf):
+            nested = [leaf]
+            for _ in range(3000):
+                nested = [nested]
+            return {
+                "type": "doc",
+                "version": 1,
+                "content": [{"attrs": {"blob": nested}}],
+            }
+
+        self.assertEqual(adf.differences(build(0), build(0)), [])
+        self.assertEqual(
+            adf.differences(build(0), build(1)),
+            ["(nesting too deep to locate the rest)"],
+        )
+
+    def test_editor_metadata_does_not_hide_a_pending_edit_in_the_same_draft(self):
+        self.state.document["content"][2]["attrs"]["parameters"]["macroParams"] = {
+            "style": {"value": "published"}
+        }
+        self.base.unlink()
+        self.assertEqual(self.run_command("get", "123", str(self.base))[0], 0)
+        self.state.draft = copy.deepcopy(self.state.document)
+        self.state.draft["content"][2]["attrs"]["parameters"]["macroParams"] = {
+            "_parentId": {"value": "456"},
+            "pending-collaborator-key": {"value": "pending-collaborator-value"},
+            "style": {"value": "published"},
+        }
+        code, output, error = self.put()
+        self.assertEqual(code, 1)
+        self.assertIn(
+            "Unpublished draft differs at /content/2/attrs/parameters;", error
+        )
+        # Paths stop at macro parameters: their keys and values can be page data.
+        self.assertNotIn("pending-collaborator", output + error)
+        self.assertEqual(self.writes(), [])
+
+    def test_verify_accepts_page_links_stored_without_their_title_segment(self):
+        page = "https://example.atlassian.net/wiki/spaces/KEY/pages/2878439433"
+        sent = copy.deepcopy(DOCUMENT)
+        sent["content"][0]["content"].append(
+            {
+                "type": "text",
+                "text": "Page link",
+                "marks": [
+                    {"type": "link", "attrs": {"href": page + "/Page+title#top"}}
+                ],
+            }
+        )
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        stored = self.state.document["content"][0]["content"][1]["marks"][0]["attrs"]
+        command = ("verify", "123", str(self.base), str(self.new))
+        sent_mark = sent["content"][0]["content"][1]["marks"][0]["attrs"]
+        for sent_href, stored_href in (
+            (page + "/Page+title#top", page + "#top"),
+            (page + "/Page+title?focusedCommentId=1", page + "?focusedCommentId=1"),
+            (
+                "https://api.atlassian.com/ex/confluence/cloud-id/wiki/spaces/KEY/pages/9/T",
+                "https://api.atlassian.com/ex/confluence/cloud-id/wiki/spaces/KEY/pages/9",
+            ),
+            # A custom domain may serve the space path at the root.
+            (
+                "https://docs.example.com/spaces/KEY/pages/9/T",
+                "https://docs.example.com/spaces/KEY/pages/9",
+            ),
+        ):
+            with self.subTest(accepted=stored_href):
+                sent_mark["href"] = sent_href
+                self.new.write_text(json.dumps(sent), encoding="utf-8")
+                stored["href"] = stored_href
+                code, output, _ = self.run_command(*command)
+                self.assertEqual(code, 0)
+                self.assertNotIn("Stored ADF differs", output)
+        for sent_href, stored_href in (
+            (page + "/Page+title#top", page.replace("2878439433", "2878439434")),
+            # Only the final segment is a title, so a deeper path keeps its middle.
+            (page + "/Page+title/attachments/9", page + "/attachments/9"),
+            (page + "/Page+title/attachments/9", page),
+            (
+                page.replace("/spaces/KEY/", "/spaces/A/B/") + "/Page+title",
+                page.replace("/spaces/KEY/", "/spaces/A/B/"),
+            ),
+            (page + "/Page+title?focusedCommentId=1", page + "?focusedCommentId=2"),
+            (page + "/Page+title", page + "/Another+title"),
+            (page, page + "/Page+title"),
+            (page, page + "/"),
+            # Only absolute lowercase https URLs with a space key match.
+            (
+                "/wiki/spaces/KEY/pages/2878439433/Page+title",
+                "/wiki/spaces/KEY/pages/2878439433",
+            ),
+            (
+                page.replace("https://", "HTTPS://") + "/Page+title",
+                page.replace("https://", "HTTPS://"),
+            ),
+            (
+                page.replace("/spaces/KEY/", "/spaces//") + "/Page+title",
+                page.replace("/spaces/KEY/", "/spaces//"),
+            ),
+            (page + "/", page),
+            (
+                page.replace("https://", "http://") + "/Page+title",
+                page.replace("https://", "http://"),
+            ),
+            # A page URL that is not the whole href, a non-numeric ID and another path shape.
+            (
+                "https://example.net/r?next=" + page + "/Page+title",
+                "https://example.net/r?next=" + page,
+            ),
+            (
+                page.replace("2878439433", "١٢") + "/Page+title",
+                page.replace("2878439433", "١٢"),
+            ),
+            (
+                page.replace("2878439433", "abc") + "/Page+title",
+                page.replace("2878439433", "abc"),
+            ),
+            (
+                page.replace("/spaces/", "/x/") + "/Page+title",
+                page.replace("/spaces/", "/x/"),
+            ),
+        ):
+            with self.subTest(rejected=stored_href):
+                sent_mark["href"] = sent_href
+                self.new.write_text(json.dumps(sent), encoding="utf-8")
+                stored["href"] = stored_href
+                code, output, _ = self.run_command(*command)
+                self.assertEqual(code, 1)
+                self.assertIn(
+                    "Stored ADF differs at: /content/0/content/1/marks/0/attrs/href",
+                    output,
+                )
+
+    def test_differences_never_report_equal_when_the_serialized_texts_differ(self):
+        left = {"type": "doc", "version": 1, "content": [{"attrs": {"n": 1}}]}
+        right = {"type": "doc", "version": 1, "content": [{"attrs": {"n": 2}}]}
+        # Simulate a walk that misses the difference the serialized comparison found.
+        with patch.object(adf.json, "loads", return_value={}):
+            self.assertEqual(adf.differences(left, right), ["(location unknown)"])
+
+    def test_differences_report_only_values_that_differ(self):
+        left = {
+            "type": "doc",
+            "version": 1,
+            "content": [{"attrs": {"same": None, "changed": 1}}],
+        }
+        right = copy.deepcopy(left)
+        right["content"][0]["attrs"]["changed"] = 2
+        self.assertEqual(adf.differences(left, right), ["/content/0/attrs/changed"])
+
+    def test_normalizations_leave_their_input_unchanged(self):
+        document = copy.deepcopy(DOCUMENT)
+        document["content"][1]["content"].append(
+            {
+                "type": "text",
+                "text": "Link",
+                "marks": [
+                    {
+                        "type": "link",
+                        "attrs": {
+                            "href": "https://e.atlassian.net/wiki/spaces/K/pages/1/T",
+                            "__confluenceMetadata": {},
+                        },
+                    }
+                ],
+            }
+        )
+        document["content"][2]["attrs"]["parameters"]["macroParams"] = {
+            "_parentId": {"value": "1"}
+        }
+        original = copy.deepcopy(document)
+        adf.without_editor_metadata(document)
+        adf.without_page_link_titles(document)
+        self.assertEqual(document, original)
+
+    def test_verify_distinguishes_an_added_null_attribute_from_an_absent_one(self):
+        self.assertEqual(self.put()[0], 0)
+        self.state.document["content"][0]["attrs"]["addedByEditor"] = None
+        code, output, _ = self.run_command(
+            "verify", "123", str(self.base), str(self.new)
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("Stored ADF differs at: /content/0/attrs/addedByEditor", output)
+
+    def test_verify_keeps_json_types_of_ordinary_attributes_distinct(self):
+        sent = copy.deepcopy(DOCUMENT)
+        sent["content"][0]["attrs"].update({"flag": True, "count": 1, "offset": 0.0})
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        attrs = self.state.document["content"][0]["attrs"]
+        command = ("verify", "123", str(self.base), str(self.new))
+        for key, stored in (("flag", 1), ("count", 1.0), ("offset", -0.0)):
+            with self.subTest(key=key):
+                original = attrs[key]
+                attrs[key] = stored
+                try:
+                    code, output, _ = self.run_command(*command)
+                    self.assertEqual(code, 1)
+                    self.assertIn(
+                        f"Stored ADF differs at: /content/0/attrs/{key}", output
+                    )
+                finally:
+                    attrs[key] = original
+
+    def test_difference_paths_escape_keys_that_could_forge_a_path_or_line(self):
+        left = {"type": "doc", "version": 1, "content": [{"attrs": {"a/b~c\nd": 1}}]}
+        right = {"type": "doc", "version": 1, "content": [{"attrs": {"a/b~c\nd": 2}}]}
+        self.assertEqual(adf.differences(left, right), ["/content/0/attrs/a~1b~0c\\nd"])
+        # A Unicode line separator would also start a new line in a terminal.
+        left["content"][0]["attrs"] = {"k ": 1}
+        right["content"][0]["attrs"] = {"k ": 2}
+        self.assertEqual(adf.differences(left, right), ["/content/0/attrs/k\\u2028"])
+
+    def test_difference_paths_stop_at_list_shaped_macro_parameters(self):
+        left = {
+            "type": "doc",
+            "version": 1,
+            "content": [{"attrs": {"parameters": [{"secret-key": 1}]}}],
+        }
+        right = copy.deepcopy(left)
+        right["content"][0]["attrs"]["parameters"][0]["secret-key"] = 2
+        self.assertEqual(adf.differences(left, right), ["/content/0/attrs/parameters"])
+
+    def test_difference_paths_follow_sorted_keys(self):
+        # Eight keys make an accidentally sorted set order unlikely.
+        keys = "hgfedcba"
+        left = {
+            "type": "doc",
+            "version": 1,
+            "content": [{"attrs": dict.fromkeys(keys, 1)}],
+        }
+        right = {
+            "type": "doc",
+            "version": 1,
+            "content": [{"attrs": dict.fromkeys(keys, 2)}],
+        }
+        self.assertEqual(
+            adf.differences(left, right),
+            [f"/content/0/attrs/{key}" for key in "abcdefgh"],
+        )
+
+    def test_verify_drops_titles_only_from_link_marks(self):
+        page = "https://example.atlassian.net/wiki/spaces/KEY/pages/1"
+        sent = copy.deepcopy(DOCUMENT)
+        sent["content"][0]["content"][0]["marks"] = [
+            {"type": "customMark", "attrs": {"href": page + "/Title"}}
+        ]
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        self.state.document["content"][0]["content"][0]["marks"][0]["attrs"]["href"] = (
+            page
+        )
+        code, _, _ = self.run_command("verify", "123", str(self.base), str(self.new))
+        self.assertEqual(code, 1)
+
+    def test_difference_report_is_capped_and_names_length_changes(self):
+        left = {"type": "doc", "version": 1, "content": [{"n": 1} for _ in range(7)]}
+        right = copy.deepcopy(left)
+        for node in right["content"][1:]:
+            node["n"] = 2
+        paths = adf.differences(left, right)
+        self.assertEqual(paths, [f"/content/{index}/n" for index in range(1, 7)])
+        self.assertEqual(
+            adf.summarize(paths),
+            "/content/1/n, /content/2/n, /content/3/n, /content/4/n, /content/5/n, ...",
+        )
+        self.assertEqual(
+            adf.summarize(paths[:5]),
+            "/content/1/n, /content/2/n, /content/3/n, /content/4/n, /content/5/n",
+        )
+        self.assertEqual(
+            adf.differences(left, {**left, "content": left["content"][:6]}),
+            ["/content (length 7 -> 6)"],
+        )
+
+    def test_verify_reports_the_comparison_with_fewer_differences_past_the_cap(self):
+        page = "https://example.atlassian.net/wiki/spaces/KEY/pages/1"
+        sent = {
+            "type": "doc",
+            "version": 1,
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Link",
+                            "marks": [{"type": "link", "attrs": {"href": page + "/T"}}],
+                        }
+                    ],
+                }
+            ]
+            + [
+                {"type": "paragraph", "content": [{"type": "text", "text": "Text"}]}
+                for _ in range(6)
+            ],
+        }
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        stored = self.state.document["content"]
+        stored[0]["content"][0]["marks"][0]["attrs"]["href"] = page
+        for paragraph in stored[1:]:
+            paragraph["content"][0]["text"] = "Changed"
+        code, output, _ = self.run_command(
+            "verify", "123", str(self.base), str(self.new)
+        )
+        self.assertEqual(code, 1)
+        self.assertNotIn("attrs/href", output)
+        self.assertIn("/content/1/content/0/text", output)
+
+    def test_verify_reports_the_as_sent_comparison_when_titles_were_kept(self):
+        page = "https://example.atlassian.net/wiki/spaces/KEY/pages/"
+        sent = copy.deepcopy(DOCUMENT)
+        sent["content"][0]["content"] += [
+            {
+                "type": "text",
+                "text": f"Link {number}",
+                "marks": [{"type": "link", "attrs": {"href": f"{page}{number}/Title"}}],
+            }
+            for number in range(6)
+        ]
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        self.state.document["content"][0]["content"][0]["text"] = "Changed"
+        code, output, _ = self.run_command(
+            "verify", "123", str(self.base), str(self.new)
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("Stored ADF differs at: /content/0/content/0/text\n", output)
+
+    def test_verify_rejects_a_save_that_drops_only_some_page_link_titles(self):
+        page = "https://example.atlassian.net/wiki/spaces/KEY/pages/"
+        sent = copy.deepcopy(DOCUMENT)
+        sent["content"][0]["content"] += [
+            {
+                "type": "text",
+                "text": f"Link {number}",
+                "marks": [{"type": "link", "attrs": {"href": f"{page}{number}/Title"}}],
+            }
+            for number in (1, 2)
+        ]
+        self.new.write_text(json.dumps(sent), encoding="utf-8")
+        self.assertEqual(self.put()[0], 0)
+        self.state.document["content"][0]["content"][1]["marks"][0]["attrs"]["href"] = (
+            page + "1"
+        )
+        command = ("verify", "123", str(self.base), str(self.new))
+        self.assertEqual(self.run_command(*command)[0], 1)
 
     def test_does_not_publish_when_adf_is_unchanged_or_only_marks_are_reordered(self):
         document = copy.deepcopy(DOCUMENT)
@@ -459,6 +944,47 @@ class HelperTests(unittest.TestCase):
                 self.assertNotIn("test-secret-do-not-print", output + error)
                 self.assertEqual(len(self.state.requests), 1)
                 self.assertEqual(self.writes(), [])
+
+    def test_certificate_failure_names_the_trust_store_fix(self):
+        certificate = ssl.SSLCertVerificationError("certificate verify failed")
+        # OpenSSL can end the message with a period; the report drops it before ")".
+        certificate.verify_message = "unable to get local issuer certificate."
+        for failure in (URLError(certificate), certificate):
+            with (
+                self.subTest(failure=type(failure).__name__),
+                patch.object(self.client.opener, "open", side_effect=failure),
+            ):
+                code, _, error = self.put()
+                self.assertEqual(code, 1)
+                self.assertIn(
+                    "TLS certificate verification failed "
+                    "(unable to get local issuer certificate)",
+                    error,
+                )
+                # The per-command fix comes before the global one left to the user.
+                self.assertLess(
+                    error.index("SSL_CERT_FILE"), error.index("Install Certificates")
+                )
+        without_reason = ssl.SSLCertVerificationError("certificate verify failed")
+        with patch.object(
+            self.client.opener, "open", side_effect=URLError(without_reason)
+        ):
+            code, _, error = self.put()
+        self.assertEqual(code, 1)
+        self.assertIn("verification failed (certificate rejected)", error)
+        for failure in (
+            URLError(ConnectionRefusedError("connection refused")),
+            ssl.SSLError("wrong version number"),
+            URLError(ssl.SSLError("wrong version number")),
+        ):
+            with (
+                self.subTest(failure=type(failure).__name__),
+                patch.object(self.client.opener, "open", side_effect=failure),
+            ):
+                code, _, error = self.put()
+                self.assertEqual(code, 1)
+                self.assertIn("check connectivity", error)
+                self.assertNotIn("TLS", error)
 
     def test_rejects_foreign_property_pagination_without_following_it(self):
         self.state.next_link = (
