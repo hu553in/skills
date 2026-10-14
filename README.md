@@ -36,6 +36,7 @@ Personal reusable agent skills.
 ## Requirements
 
 - Bun for installation and repository checks
+- Make for repository checks
 - uv for repository maintenance
 - Python 3.10 or newer for the Confluence helper; credentials and API usage are documented in
   [`confluence-adf`](confluence-adf/references/helper-usage.md).

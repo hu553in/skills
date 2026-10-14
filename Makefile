@@ -17,6 +17,10 @@ lint-fix:
 	$(RUFF) check --fix $(PYTHON_FILES)
 	$(RUFF) format $(PYTHON_FILES)
 
+.PHONY: test
+test:
+	uv run --with pyyaml python -m unittest discover -s scripts
+
 .PHONY: check-config
 check-config:
 	git config --file .gitconfig --list >/dev/null
@@ -24,17 +28,13 @@ check-config:
 	uvx check-jsonschema --schemafile https://skills.sh/schemas/skills.sh.schema.json skills.sh.json
 	uv run --with pyyaml python scripts/check_skills.py
 
-.PHONY: test
-test:
-	uv run --with pyyaml python -m unittest discover -s scripts
+.PHONY: check-renovate
+check-renovate:
+	bunx --package renovate renovate-config-validator --strict --no-global renovate.json
 
 .PHONY: check-workflows
 check-workflows:
 	$(ACTIONLINT)
-
-.PHONY: check-renovate
-check-renovate:
-	bunx --package renovate renovate-config-validator --strict --no-global renovate.json
 
 .PHONY: check
 check: lint test check-config check-renovate check-workflows
