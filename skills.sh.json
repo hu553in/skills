@@ -19,8 +19,8 @@
     },
     {
       "title": "Writing",
-      "description": "Skills for clear, natural engineering communication.",
-      "skills": ["human-engineering-chat-updates"]
+      "description": "Skills for engineering communication and requested conversational voices.",
+      "skills": ["human-engineering-chat-updates", "shkya"]
     },
     {
       "title": "Integrations",

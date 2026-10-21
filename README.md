@@ -27,6 +27,8 @@ Personal reusable agent skills.
 - [`human-engineering-chat-updates`](human-engineering-chat-updates/SKILL.md): conversational
   engineering status updates, research summaries, and findings for team chats without profanity,
   corporate filler, or robotic phrasing.
+- [`shkya`](shkya/SKILL.md): Russian replies built from context-appropriate ШКЯ expressions while
+  preserving the full meaning, for one turn by default or the current conversation on request.
 
 ## Integrations
 
@@ -55,6 +57,8 @@ Use $staged-code-review to review and fix my staged changes, preserve my staged 
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and anti-slop verification matched to the requested scope.
 Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat update without profanity, corporate filler, or robotic phrasing.
+Use $shkya to answer this request in Russian with context-appropriate ШКЯ phrasing, preserving the full meaning.
+Use $shkya for the rest of this conversation until I ask you to turn it off.
 Use $confluence-adf to apply the requested edit to this existing Confluence Cloud page, preserving unrelated ADF content and verifying the saved version and page appearance.
 ```
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: 'ШКЯ'
+  short_description: 'Речь в лексиконе ШКЯ с сохранением смысла'
+  default_prompt:
+    'Use $shkya to answer in Russian with context-appropriate ШКЯ phrasing for this turn, preserving
+    the full meaning.'
