@@ -7,16 +7,22 @@ Personal reusable agent skills.
 
 ## Design
 
+Design interfaces and improve user experience.
+
 - [`anti-slop-design`](anti-slop-design/SKILL.md): distinctive, cohesive interface design,
   implementation, refactoring, and review with anti-pattern checks and rendered verification matched
   to the requested scope.
 
 ## Code quality
 
+Review and improve code correctness and maintainability.
+
 - [`staged-code-review`](staged-code-review/SKILL.md): thorough review of staged Git changes,
   read-only by default, with fixes on request while preserving the staged index.
 
 ## Repository hygiene
+
+Organize and maintain repositories and development workflows.
 
 - [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
   docs, tooling config, dependency automation, and GitHub metadata without touching application
@@ -24,13 +30,14 @@ Personal reusable agent skills.
 
 ## Writing
 
-- [`human-engineering-chat-updates`](human-engineering-chat-updates/SKILL.md): conversational
-  engineering status updates, research summaries, and findings for team chats without profanity,
-  corporate filler, or robotic phrasing.
+Write and edit text for different audiences and purposes.
+
 - [`shkya`](shkya/SKILL.md): Russian replies built from context-appropriate ШКЯ expressions while
   preserving the full meaning, for one turn by default or the current conversation on request.
 
 ## Integrations
+
+Work with external tools and services.
 
 - [`confluence-adf`](confluence-adf/SKILL.md): edit existing Confluence Cloud pages through native
   ADF, preserve unrelated rich content, and verify the saved version and page appearance.
@@ -56,7 +63,6 @@ Use $staged-code-review to review my staged changes and report findings without 
 Use $staged-code-review to review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and anti-slop verification matched to the requested scope.
-Use $human-engineering-chat-updates to turn technical facts into a concise, natural team-chat update without profanity, corporate filler, or robotic phrasing.
 Use $shkya to answer this request in Russian with context-appropriate ШКЯ phrasing, preserving the full meaning.
 Use $shkya for the rest of this conversation until I ask you to turn it off.
 Use $confluence-adf to apply the requested edit to this existing Confluence Cloud page, preserving unrelated ADF content and verifying the saved version and page appearance.

@@ -4,27 +4,27 @@
   "groupings": [
     {
       "title": "Design",
-      "description": "Skills for distinctive interface design and frontend craft.",
+      "description": "Design interfaces and improve user experience.",
       "skills": ["anti-slop-design"]
     },
     {
-      "title": "Code Quality",
-      "description": "Skills for reviewing and improving code quality.",
+      "title": "Code quality",
+      "description": "Review and improve code correctness and maintainability.",
       "skills": ["staged-code-review"]
     },
     {
-      "title": "Repository Hygiene",
-      "description": "Skills for standardizing repository docs, tooling, and metadata.",
+      "title": "Repository hygiene",
+      "description": "Organize and maintain repositories and development workflows.",
       "skills": ["repo-fleet-standardization"]
     },
     {
       "title": "Writing",
-      "description": "Skills for engineering communication and requested conversational voices.",
-      "skills": ["human-engineering-chat-updates", "shkya"]
+      "description": "Write and edit text for different audiences and purposes.",
+      "skills": ["shkya"]
     },
     {
       "title": "Integrations",
-      "description": "Skills for working with external services and their APIs.",
+      "description": "Work with external tools and services.",
       "skills": ["confluence-adf"]
     }
   ]
