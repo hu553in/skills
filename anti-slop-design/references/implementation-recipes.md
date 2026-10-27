@@ -9,8 +9,12 @@ scope.
   [Align parallel columns](#align-parallel-columns) | [Center precisely](#center-precisely)
 - [Cast shadows as light](#cast-shadows-as-light) |
   [Feather a full-bleed image](#feather-a-full-bleed-image-into-the-page) |
-  [Build liquid glass](#build-liquid-glass-deliberately) | [Animate fills](#animate-fills-cleanly)
+  [Build liquid glass](#build-liquid-glass-deliberately) | [Animate fills](#animate-fills-cleanly) |
+  [Motion cost](#keep-motion-responsive)
 - [Rendered verification matrix](#rendered-verification-matrix)
+- [Stateful controls](#stateful-controls) | [Data displays](#data-displays) |
+  [Media delivery](#media-delivery) |
+  [Responsive and theme behavior](#responsive-and-theme-behavior)
 
 ## Content must be visible by default
 
@@ -132,6 +136,91 @@ glow, and hover or press state pops.
 - Fill the complete track.
 - Use smooth, intentional easing with no stutter.
 - Verify intermediate frames, not only start and end.
+
+For scroll-linked CSS, declare `animation-timeline` and `animation-range` after the `animation`
+shorthand, which resets them. Put enhancement behind the relevant feature and reduced-motion checks.
+Keep the complete static layout and readable prose available without the enhancement. Use a timeline
+on the moving track when a pinned child cannot drive its own progress.
+
+## Keep motion responsive
+
+Name CSS transition properties explicitly instead of using `transition: all`. Prefer `transform` and
+`opacity` for frequent motion when they preserve the intended geometry. Dimension changes can still
+serve real reflow or the stable-cap fill recipe above. Keep layout and paint work local, inspect
+intermediate frames, and check responsiveness under representative load before retaining a costly
+effect. Avoid permanent `will-change` on whole classes.
+
+## Stateful controls
+
+Preserve the project's interaction contract while styling the states it actually supports.
+
+- Keep visible labels, native semantics, programmatic names, and field/error associations. A
+  placeholder can show a format but cannot replace the label. Use text as well as color for errors
+  and disabled explanations. Do not replace the project's validation timing merely for a new look.
+- Keep border widths and control geometry stable across hover, focus, invalid, and busy states.
+  Reserve an icon or progress slot where it prevents shifts. Error copy may wrap; do not clip it to
+  force a fixed height. Focus indication should appear promptly without an animated delay.
+- Retain a readable action label during submission and prevent unintended duplicate requests. Show
+  success only after the actual operation succeeds. A copied label follows a successful clipboard
+  write, and an optimistic change needs failure recovery. Preserve useful input on error.
+- Place feedback near the action or content that changed. Announce relevant results without
+  announcing every intermediate animation frame or search keystroke. Debounced search must retain
+  the latest query's result when requests finish out of order.
+- A drag interaction needs an accessible keyboard alternative and clear feedback about the move.
+  Menus, tooltips, and overlays must remain usable near viewport edges and outside clipping parents.
+  Reuse the existing accessible primitive rather than styling a weaker substitute.
+
+## Data displays
+
+Choose a form that answers the user's question. A single value usually needs a figure with a unit
+and qualifier. Bars support magnitude comparisons, lines support change over ordered time, and
+tables support exact values or many categories. Avoid adding charts merely to fill a dashboard.
+Retain established domain conventions when they improve comprehension.
+
+- Use verified data or explicitly labeled sample data. State relevant units, time range, source, and
+  missing values. Do not turn missing data into zero or invent precision, totals, or trends.
+- Magnitude bars start at zero. Label a deliberately narrowed axis clearly; do not exaggerate a
+  small difference with an unexplained truncated range. Prefer separate panels to an ambiguous
+  dual-axis comparison of different units.
+- Emphasize the series the task concerns and keep reference material quiet. Keep series meaning
+  stable across charts, filters, and themes. Use direct labels, markers, or patterns so color alone
+  does not carry identity or state.
+- Use tabular numerals where values align. Keep labels and gridlines legible without competing with
+  the data. Provide an appropriate textual summary or data table for a visual chart.
+- Check long labels, empty and partial series, real date/number formatting, and both supported
+  themes. Reuse the project's chart tooling; inline SVG and a new chart library are choices, not
+  requirements.
+
+## Media delivery
+
+- Prefer supplied material and actual authorized product captures. Inspect each crop at its
+  displayed size. Preserve the real product's meaning; an attractive treatment must not turn a
+  stand-in into customer proof or hide an important detail.
+- Reserve image dimensions or an aspect ratio to prevent layout shifts. Supply responsive sources
+  and a crop appropriate to the layout. Do not lazy-load the initial primary image; defer suitable
+  off-screen media. Check that a high-resolution source is actually useful at the rendered size.
+- For video, retain a useful poster, playback controls, and captions when needed. Do not autoplay
+  audible media. Give persistent nonessential motion a usable pause mechanism and an appropriate
+  static or reduced-motion treatment. Use the project's asset and performance budgets.
+- Decorative texture must not intercept input, appear as meaningful accessibility content, or reduce
+  text contrast. Keep it subordinate to real material and measure the textured result. Avoid
+  expensive animated filters or permanent layer promotion without evidence they are needed.
+
+## Responsive and theme behavior
+
+Use existing breakpoints and supported widths. Apply continuous sizing to properties that should
+vary continuously and discrete layout changes where the content stops fitting. Use capability
+queries for hover and pointer behavior. A narrow viewport does not prove that the input is touch.
+
+Let the surrounding row reflow before squeezing labels into illegibility. Keep useful names and
+translated strings intact. Use logical properties and locale-aware formats where the product
+supports them. Dense tables need an intentional narrow layout or usable scrolling that retains row
+identity, header relationships, and access to actions. Hiding overflow is not a responsive fix.
+
+Treat dark mode as the same semantic system rendered deliberately. Preserve explicit user choices
+and the existing system-preference behavior. Recheck surface hierarchy, focus, imagery, and chart
+series in each supported mode. Avoid global image inversion and mechanical color inversion. Do not
+add a mode switch or a new persistence mechanism without task scope.
 
 ## Rendered verification matrix
 

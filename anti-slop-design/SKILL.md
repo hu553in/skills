@@ -38,8 +38,11 @@ every edit.
   direction, judging a context-dependent exception, changing a design contract, or evaluating a
   component tool or registry. The signature formula and named tools are options, not requirements.
 - [Implementation recipes and verification](references/implementation-recipes.md): when affected
-  work involves clipping, comparison alignment, centering, shadows, image blending, glass, motion,
-  or a rendered-verification checklist. Adapt recipes to the existing platform.
+  work involves stateful controls, data displays, media, responsive or theme behavior, visual
+  effects, motion, or rendered verification. Adapt recipes to the existing platform.
+- [Design workflow](references/WORKFLOW.md): for substantial design work or an audit, including work
+  depth, real and missing material, task-led composition, preserving behavior, representative units,
+  and review.
 
 ## Implementation boundaries
 
@@ -77,5 +80,15 @@ fixes and recheck affected behavior; revisit cleared areas only for new evidence
 read-only unless fixes are requested. Stop when the requested scope is covered, not when every
 optional premium technique has been added.
 
+Distinguish correctness failures, contextual preferences, and optional craft refinements. An
+aesthetic convention is not a correctness failure by itself. Keep justified exceptions and report
+checks as passed, failed, or not run with evidence that supports the claim.
+
 Report substantive changes or findings, actual rendered checks and interactions tested, and any
 remaining limitations. Do not claim checks passed when they did not run.
+
+## Sources
+
+Includes guidance adapted from
+[Hallmark](https://github.com/Nutlope/hallmark/tree/6033bab2a8051b5454552d2e8e6cb8f27c483a42). Its
+[MIT notice](LICENSES/HALLMARK.txt) is retained.

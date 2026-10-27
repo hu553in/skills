@@ -121,6 +121,15 @@ implementation in sync.
   does not carry the identity.
 - A signature serif, one italic word, or one accent word can work only when the face is genuinely
   brief-specific, the headline is controlled, and the move is not the repeated house style.
+- Load only the files, scripts, weights, and styles the real content uses. Check language coverage
+  and actual bold and italic faces rather than relying on synthetic styles. Use the project's font
+  loading strategy, a suitable fallback, and metric adjustment when it prevents a demonstrated swap
+  shift. Inspect loading and fallback states as well as the final font.
+- For sustained reading, tune prose measure and line-height to the actual face, language, content,
+  and existing typography contract. Cap the reading column where lines become hard to follow. Check
+  paragraph and heading wraps at supported widths and text zoom; preserve deliberate table and code
+  layouts. Avoid cramped leading, accidental single-word lines, and forced breaks that fail on a
+  narrower screen.
 
 ## Premium forms of common techniques
 
