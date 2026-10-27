@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Poke talking'
+  short_description: 'Terse, candid communication inspired by Poke'
+  default_prompt: 'Use $poke-talking to follow its communication and workflow rules.'
