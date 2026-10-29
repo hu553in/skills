@@ -192,35 +192,41 @@ def transform_adf(value, change):
     return visit(value)
 
 
+# Link marks and smart cards whose page title the Cloud editor caches in __confluenceMetadata.
+EDITOR_TITLE_CACHES = frozenset({"link", "inlineCard", "blockCard", "embedCard"})
+# Page IDs the Cloud editor adds to a macro's macroParams.
+EDITOR_MACRO_PARAMS = frozenset({"_parentId", "_referencedContentId"})
+
+
 def without_editor_metadata(value):
     """Drop attributes the Cloud editor adds to its collaborative draft on its own.
 
-    Opening a page in the editor can leave a draft with a macro's parent page ID and a page link's
-    cached title added. A draft that differs only by these carries no pending edit. The parent ID
-    can be the only macro parameter, so an empty macroParams or parameters counts as absent.
+    Opening a page in the editor can leave a draft with page IDs added to a macro and a cached page
+    title added to a link or card. A draft that differs only by these carries no pending edit. The
+    IDs can be the only macro parameters, so an empty macroParams or parameters counts as absent.
     """
 
-    def without(mapping, name):
-        return {key: item for key, item in mapping.items() if key != name}
+    def without(mapping, names):
+        return {key: item for key, item in mapping.items() if key not in names}
 
     def change(node):
         attrs = node.get("attrs")
         if not isinstance(attrs, dict):
             return
-        if node.get("type") == "link":
-            attrs = node["attrs"] = without(attrs, "__confluenceMetadata")
+        if node.get("type") in EDITOR_TITLE_CACHES:
+            attrs = node["attrs"] = without(attrs, {"__confluenceMetadata"})
         parameters = attrs.get("parameters")
         if not isinstance(parameters, dict):
             return
         macro = parameters.get("macroParams")
         if isinstance(macro, dict):
-            macro = without(macro, "_parentId")
-            rest = without(parameters, "macroParams")
+            macro = without(macro, EDITOR_MACRO_PARAMS)
+            rest = without(parameters, {"macroParams"})
             parameters = {**rest, "macroParams": macro} if macro else rest
         node["attrs"] = (
             {**attrs, "parameters": parameters}
             if parameters
-            else without(attrs, "parameters")
+            else without(attrs, {"parameters"})
         )
 
     return transform_adf(value, change)

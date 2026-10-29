@@ -57,11 +57,11 @@ the baseline; older snapshots without site identity need a fresh `get`.
 `put` rejects a changed baseline or an accessible divergent draft, preserves the current title, and
 submits the next published version. If the draft read fails, it stops before publication rather than
 interpreting a missing or inaccessible response as proof that no draft exists. Opening a page in the
-Cloud editor can leave a draft with `_parentId` added inside a macro's
-`attrs.parameters.macroParams` and `__confluenceMetadata` added to a `link` mark; a draft that
-differs only in those attributes holds no pending edit and does not block. A draft with another
-title, or with other content, blocks publication. The error names a title change or lists the
-differing JSON paths.
+Cloud editor can leave a draft with `_parentId` and `_referencedContentId` added inside a macro's
+`attrs.parameters.macroParams` and `__confluenceMetadata` added to a `link` mark or an `inlineCard`,
+`blockCard` or `embedCard` node; a draft that differs only in those attributes holds no pending edit
+and does not block. A draft with another title, or with other content, blocks publication. The error
+names a title change or lists the differing JSON paths.
 
 `put` rereads and verifies the saved page after writing, even when the successful PUT response body
 is incomplete. `verify` performs the same checks without publishing. A mismatch returns a nonzero

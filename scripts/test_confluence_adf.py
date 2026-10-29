@@ -7,8 +7,10 @@ import sys
 import threading
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from functools import reduce
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import StringIO
+from operator import getitem
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -386,21 +388,63 @@ class HelperTests(unittest.TestCase):
         del self.state.draft["content"][2]["attrs"]["parameters"]["macroParams"]
         self.client.check_draft("123", current)
 
-    def test_draft_check_accepts_parameters_created_only_for_the_parent_id(self):
-        # The published macro has empty parameters or none at all.
-        for published in ({}, None):
-            with self.subTest(published=published):
-                attrs = self.state.document["content"][2]["attrs"]
-                if published is None:
-                    attrs.pop("parameters", None)
-                else:
-                    attrs["parameters"] = published
+    def test_draft_check_accepts_macro_ids_the_editor_adds(self):
+        # The published macro has empty parameters, none at all, or parameters of its own.
+        own = {"macroParams": {"name": {"value": "Excerpt"}}}
+        for published in ({}, None, own):
+            for name in ("_parentId", "_referencedContentId"):
+                with self.subTest(published=published, name=name):
+                    attrs = self.state.document["content"][2]["attrs"]
+                    if published is None:
+                        attrs.pop("parameters", None)
+                    else:
+                        attrs["parameters"] = copy.deepcopy(published)
+                    current = self.client.page("123")
+                    self.state.draft = copy.deepcopy(self.state.document)
+                    self.state.draft["content"][2]["attrs"]["parameters"] = {
+                        "macroParams": {
+                            **(published or {}).get("macroParams", {}),
+                            name: {"value": "456"},
+                        }
+                    }
+                    self.client.check_draft("123", current)
+
+    def test_draft_check_ignores_cached_titles_on_cards(self):
+        original = copy.deepcopy(self.state.document)
+        for card_type in ("inlineCard", "blockCard", "embedCard"):
+            with self.subTest(card_type=card_type):
+                self.state.document = copy.deepcopy(original)
+                card = {
+                    "type": card_type,
+                    "attrs": {"url": "https://example.atlassian.net/x/1"},
+                }
+                # An inline card goes into the paragraph, a block card into the document.
+                path = (
+                    ["content", 1, "content"]
+                    if card_type == "inlineCard"
+                    else ["content"]
+                )
+                parent = reduce(getitem, path, self.state.document)
+                parent.append(card)
+                path.append(len(parent) - 1)
                 current = self.client.page("123")
                 self.state.draft = copy.deepcopy(self.state.document)
-                self.state.draft["content"][2]["attrs"]["parameters"] = {
-                    "macroParams": {"_parentId": {"value": "456"}}
+                node = reduce(getitem, path, self.state.draft)
+                node["attrs"]["__confluenceMetadata"] = {
+                    "linkType": "page",
+                    "contentTitle": "Cached title",
                 }
                 self.client.check_draft("123", current)
+                # A changed card target is still a pending edit.
+                node["attrs"]["url"] = "https://example.atlassian.net/x/2"
+                pointer = "/" + "/".join(map(str, path)) + "/attrs/url"
+                with self.assertRaises(adf.ConfluenceError) as raised:
+                    self.client.check_draft("123", current)
+                self.assertEqual(
+                    str(raised.exception),
+                    f"Unpublished draft differs at {pointer}; "
+                    "resolve pending edits before publishing",
+                )
 
     def test_draft_check_ignores_editor_metadata_on_the_published_side_too(self):
         link = {
