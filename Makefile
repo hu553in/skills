@@ -1,19 +1,18 @@
 .DEFAULT_GOAL := check
 
-PRETTIER := bunx prettier -u
 ACTIONLINT := bunx github-actionlint
 RUFF := uvx ruff
 PYTHON_FILES := scripts/*.py $(wildcard */scripts/*.py)
 
 .PHONY: lint
 lint:
-	$(PRETTIER) -c .
+	bun fmt --check
 	$(RUFF) check $(PYTHON_FILES)
 	$(RUFF) format --check $(PYTHON_FILES)
 
 .PHONY: lint-fix
 lint-fix:
-	$(PRETTIER) -w .
+	bun fmt
 	$(RUFF) check --fix $(PYTHON_FILES)
 	$(RUFF) format $(PYTHON_FILES)
 
