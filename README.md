@@ -7,30 +7,22 @@ Personal reusable agent skills.
 
 ## Design
 
-Design interfaces and improve user experience.
-
 - [`anti-slop-design`](anti-slop-design/SKILL.md): distinctive, cohesive interface design,
   implementation, refactoring, and review with anti-pattern checks and rendered verification matched
   to the requested scope.
 
 ## Code quality
 
-Review and improve code correctness and maintainability.
-
 - [`staged-code-review`](staged-code-review/SKILL.md): thorough review of staged Git changes,
   read-only by default, with fixes on request while preserving the staged index.
 
 ## Repository hygiene
-
-Organize and maintain repositories and development workflows.
 
 - [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
   docs, tooling config, dependency automation, and GitHub metadata without touching application
   code.
 
 ## Writing
-
-Write and edit text for different audiences and purposes.
 
 - [`poke-talking`](poke-talking/SKILL.md): terse, candid, peer-to-peer communication inspired by
   [Poke](https://poke.com/docs) from The Interaction Company of California, with matched tone and
@@ -39,8 +31,6 @@ Write and edit text for different audiences and purposes.
   preserving the full meaning, for one turn by default or the current conversation on request.
 
 ## Integrations
-
-Work with external tools and services.
 
 - [`confluence-adf`](confluence-adf/SKILL.md): edit existing Confluence Cloud pages through native
   ADF, preserve unrelated rich content, and verify the saved version and page appearance.
@@ -84,10 +74,11 @@ Use $confluence-adf to apply the requested edit to this existing Confluence Clou
 
 ## Maintenance
 
-Enable the tracked project-check and Commitlint hooks once per clone with Git 2.54 or newer:
+Install [prek](https://prek.j178.dev/installation/), then enable the project-check and Commitlint
+hooks once per clone:
 
 ```sh
-git config --local include.path ../.gitconfig
+prek install
 ```
 
 When adding a skill:

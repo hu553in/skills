@@ -22,4 +22,6 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@v7
       - uses: oven-sh/setup-bun@v2
-      - run: make check
+      - env:
+          PREK: uvx prek
+        run: make check

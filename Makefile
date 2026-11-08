@@ -1,5 +1,6 @@
 .DEFAULT_GOAL := check
 
+PREK ?= prek
 ACTIONLINT := bunx github-actionlint
 RUFF := uvx ruff
 PYTHON_FILES := scripts/*.py $(wildcard */scripts/*.py)
@@ -22,7 +23,7 @@ test:
 
 .PHONY: check-config
 check-config:
-	git config --file .gitconfig --list >/dev/null
+	$(PREK) validate-config prek.toml
 	DISABLE_TELEMETRY=1 bunx skills add . --list
 	uvx check-jsonschema --schemafile https://skills.sh/schemas/skills.sh.schema.json skills.sh.json
 	uv run --with pyyaml python scripts/check_skills.py
