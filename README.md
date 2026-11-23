@@ -87,8 +87,8 @@ When adding a skill:
 2. Add agent-specific metadata under `<skill-name>/agents/` when needed.
 3. Add the skill slug to `skills.sh.json` so the skills.sh page stays organized.
 4. Add the skill to the appropriate catalog section in this README.
-5. Run `make check`. It validates formatting, workflows, Renovate configuration, `skills.sh.json`
-   against the official schema, skill structure, and the local skills.sh listing.
+5. Run `make check`. It validates formatting, workflows, `skills.sh.json` against the official
+   schema, skill structure, and the local skills.sh listing.
 
 `make test` runs the validator and skill-helper tests and is included in `make check`. Use
 `make lint-fix` for formatting and Ruff fixes, or `make check-fix` to apply those fixes and rerun

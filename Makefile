@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := check
 
 PREK ?= prek
-ACTIONLINT := bunx github-actionlint
-RUFF := uvx ruff
+ACTIONLINT := bunx --minimum-release-age 259200 github-actionlint
+RUFF := uvx --exclude-newer 3d ruff
 PYTHON_FILES := scripts/*.py $(wildcard */scripts/*.py)
 
 .PHONY: lint
@@ -19,25 +19,21 @@ lint-fix:
 
 .PHONY: test
 test:
-	uv run --with pyyaml python -m unittest discover -s scripts
+	uv run --exclude-newer 3d --with pyyaml python -m unittest discover -s scripts
 
 .PHONY: check-config
 check-config:
 	$(PREK) validate-config prek.toml
-	DISABLE_TELEMETRY=1 bunx skills add . --list
-	uvx check-jsonschema --schemafile https://skills.sh/schemas/skills.sh.schema.json skills.sh.json
-	uv run --with pyyaml python scripts/check_skills.py
-
-.PHONY: check-renovate
-check-renovate:
-	bunx --package renovate renovate-config-validator --strict --no-global renovate.json
+	DISABLE_TELEMETRY=1 bunx --minimum-release-age 259200 skills add . --list
+	uvx --exclude-newer 3d check-jsonschema --schemafile https://skills.sh/schemas/skills.sh.schema.json skills.sh.json
+	uv run --exclude-newer 3d --with pyyaml python scripts/check_skills.py
 
 .PHONY: check-workflows
 check-workflows:
 	$(ACTIONLINT)
 
 .PHONY: check
-check: lint test check-config check-renovate check-workflows
+check: lint test check-config check-workflows
 
 .PHONY: check-fix
 check-fix: lint-fix

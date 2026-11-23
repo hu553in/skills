@@ -61,16 +61,15 @@ Useful coverage areas, when in scope:
   not expose secrets in findings.
 - Metadata: descriptions, topics, homepages, visibility, releases, tags, and `skills.sh` metadata.
 
-Check updater ownership for each dependency declaration, not merely the presence of Renovate. When
-dependencies are in scope, compare with current stable releases even for covered declarations.
-Prefer upgrades, including majors, rather than waiting for the updater. Coordinate with existing
-update PRs, keep related declarations consistent, and verify the result. Resolve fixable
-incompatibilities within authorized scope; if an upgrade requires application-code changes, report
-the needed work rather than violating this skill's boundary. Defer upgrades only for demonstrated
-blockers that cannot be resolved within scope, explaining why. Propose automation for uncovered
-declarations. Preserve intentional floating major action tags, internal reusable workflow branch
-refs, and explicit user version constraints. Read-only audits propose upgrades without applying
-them.
+Identify the owner of each dependency declaration. When dependencies are in scope, compare each
+version with current stable releases. Prefer upgrades, including majors, rather than waiting for the
+updater. Coordinate with existing update PRs, keep related declarations consistent, and verify the
+result. Resolve fixable incompatibilities within authorized scope; if an upgrade requires
+application-code changes, report the needed work rather than violating this skill's boundary. Defer
+upgrades only for demonstrated blockers that cannot be resolved within scope, explaining why.
+Propose automation for uncovered declarations. Preserve intentional floating major action tags,
+internal reusable workflow branch refs, and explicit user version constraints. Read-only audits
+propose upgrades without applying them.
 
 Read conditional guidance only when relevant:
 
