@@ -3,11 +3,6 @@
   "notGrouped": "bottom",
   "groupings": [
     {
-      "title": "Code quality",
-      "description": "Review and improve code correctness and maintainability.",
-      "skills": ["staged-code-review"]
-    },
-    {
       "title": "Repository hygiene",
       "description": "Organize and maintain repositories and development workflows.",
       "skills": ["repo-fleet-standardization"]

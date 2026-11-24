@@ -1,6 +1,0 @@
-interface:
-  display_name: 'Staged code review'
-  short_description: 'Staged review; fixes on request'
-  default_prompt:
-    'Use $staged-code-review to review my staged changes, report findings, and leave any authorized
-    fixes unstaged.'

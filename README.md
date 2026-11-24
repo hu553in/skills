@@ -5,11 +5,6 @@
 
 Personal reusable agent skills.
 
-## Code quality
-
-- [`staged-code-review`](staged-code-review/SKILL.md): thorough review of staged Git changes,
-  read-only by default, with fixes on request while preserving the staged index.
-
 ## Repository hygiene
 
 - [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): read-only audits and cleanup
@@ -46,8 +41,6 @@ bunx skills add hu553in/skills
 Then invoke a skill by name when the workflow applies:
 
 ```text
-Use $staged-code-review to review my staged changes and report findings without editing files.
-Use $staged-code-review to review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
 Use $poke-talking to follow its communication and workflow rules.
 Use $shkya to answer this request in Russian with context-appropriate ШКЯ phrasing, preserving the full meaning.
