@@ -3,11 +3,6 @@
   "notGrouped": "bottom",
   "groupings": [
     {
-      "title": "Design",
-      "description": "Design interfaces and improve user experience.",
-      "skills": ["anti-slop-design"]
-    },
-    {
       "title": "Code quality",
       "description": "Review and improve code correctness and maintainability.",
       "skills": ["staged-code-review"]

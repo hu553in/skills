@@ -5,12 +5,6 @@
 
 Personal reusable agent skills.
 
-## Design
-
-- [`anti-slop-design`](anti-slop-design/SKILL.md): distinctive, cohesive interface design,
-  implementation, refactoring, and review with anti-pattern checks and rendered verification matched
-  to the requested scope.
-
 ## Code quality
 
 - [`staged-code-review`](staged-code-review/SKILL.md): thorough review of staged Git changes,
@@ -18,9 +12,9 @@ Personal reusable agent skills.
 
 ## Repository hygiene
 
-- [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): multi-repository cleanup of
-  docs, tooling config, dependency automation, and GitHub metadata without touching application
-  code.
+- [`repo-fleet-standardization`](repo-fleet-standardization/SKILL.md): read-only audits and cleanup
+  on request for docs, tooling config, dependency automation, and GitHub metadata across related
+  repositories.
 
 ## Writing
 
@@ -55,7 +49,6 @@ Then invoke a skill by name when the workflow applies:
 Use $staged-code-review to review my staged changes and report findings without editing files.
 Use $staged-code-review to review and fix my staged changes, preserve my staged index exactly, and leave any new fixes unstaged.
 Use $repo-fleet-standardization to standardize docs, tooling configs, dependency automation, and GitHub metadata across related repositories without touching application code or staging/committing unrequested changes.
-Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive visual system and anti-slop verification matched to the requested scope.
 Use $poke-talking to follow its communication and workflow rules.
 Use $shkya to answer this request in Russian with context-appropriate ШКЯ phrasing, preserving the full meaning.
 Use $shkya for the rest of this conversation until I ask you to turn it off.

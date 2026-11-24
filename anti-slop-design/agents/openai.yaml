@@ -1,6 +1,0 @@
-interface:
-  display_name: 'Anti-slop design'
-  short_description: 'Distinctive UI design without AI slop'
-  default_prompt:
-    'Use $anti-slop-design to design, build, refactor, or review this interface with a distinctive
-    visual system and anti-slop verification matched to the requested scope.'
