@@ -74,11 +74,10 @@ Use $confluence-adf to apply the requested edit to this existing Confluence Clou
 
 ## Maintenance
 
-Install [prek](https://prek.j178.dev/installation/), then enable the project-check and Commitlint
-hooks once per clone:
+Install the Lefthook checks once per clone:
 
 ```sh
-prek install
+bunx lefthook install
 ```
 
 When adding a skill:

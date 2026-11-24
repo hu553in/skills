@@ -22,6 +22,4 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@v10.4.0
       - uses: oven-sh/setup-bun@v2
-      - env:
-          PREK: uvx --exclude-newer 3d prek
-        run: make check
+      - run: make check
